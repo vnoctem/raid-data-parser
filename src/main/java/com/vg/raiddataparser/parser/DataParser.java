@@ -63,9 +63,11 @@ public class DataParser {
         // Traverse children
         for (int i = 0; i < nodeChampions.size(); i++) {
 
-            // Create a Champion for each child without the field "AwakenMaterials"
-            // So we create one unique champion instance
-            if (!nodeChampions.get(i).has("AwakenMaterials")) {
+            // Filter out unwanted champions...
+            // - with no AwakenMaterials (so fully ascended)
+            // - with faction value at 0
+            if (!nodeChampions.get(i).has("AwakenMaterials")
+                    && nodeChampions.get(i).get("Fraction").intValue() == 0) {
 
                 JsonNode championNode = nodeChampions.get(i);
 
