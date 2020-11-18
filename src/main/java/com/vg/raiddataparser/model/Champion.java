@@ -14,19 +14,12 @@ public class Champion {
     private int faction;
     private int rarity;
 
-    public Champion() {}
-
-    public Champion(int id) {
-        this.id = id;
-    }
-
-    public Champion(int id, String name) {
-        this(id);
-        this.name = name;
+    public Champion() {
     }
 
     public Champion(int id, String name, int affinity, int role, int faction, int rarity) {
-        this(id, name);
+        this.id = id;
+        this.name = name;
         this.affinity = affinity;
         this.role = role;
         this.faction = faction;
