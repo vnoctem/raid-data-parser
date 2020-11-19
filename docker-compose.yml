@@ -1,0 +1,22 @@
+version: "3.8"
+services:
+
+  db:
+    image: mysql
+    container_name: mysql_container
+    command: mysqld --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: db_raid
+      MYSQL_USER: dev_user
+      MYSQL_PASSWORD: dev_password
+    ports:
+      - "3307:3306"
+    expose:
+      - "3306"
+    user: "1000:50"
+    volumes:
+      - db_raid_volume:/var/lib/mysql/
+
+volumes:
+  db_raid_volume:

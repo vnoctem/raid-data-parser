@@ -29,6 +29,7 @@ public class DataParser {
     private static final String JSON_CHAMPIONS_NODE = "HeroTypes";
     private static final String JSON_SKILL_DATA_NODE = "SkillData";
     private static final String JSON_SKILLS_NODE = "SkillTypes";
+    private static final String JSON_STATIC_DATA_LOCALIZATION_NODE = "StaticDataLocalization";
 
     // Method called after bean initialization
     @PostConstruct
@@ -56,6 +57,7 @@ public class DataParser {
         }
         assert rootNode != null : "Error: root node is null";
 
+        // TODO: disable comment
         //parseChampionData(rootNode);
         parseSkillData(rootNode);
     }
@@ -107,9 +109,17 @@ public class DataParser {
 
             int skillId = nodeSkill.get("Id").intValue();
             int skillRevision = nodeSkill.get("Revision").intValue();
-            // FIXME Get the StaticDataLocalization for the skillName and skillDescription values
-            String skillName = nodeSkill.get("Name").get("DefaultValue").textValue();
+
+            // FIXME: Get the StaticDataLocalization for the skillName and skillDescription values
+            JsonNode nodeStaticDataLocalization = rootNode.get(JSON_STATIC_DATA_LOCALIZATION_NODE);
+            String skillNameKey = nodeSkill.get("Name").get("Key").textValue();
+            String skillName = nodeStaticDataLocalization.findPath(skillNameKey).textValue();
+
+
+            //String skillName = nodeSkill.get("Name").get("DefaultValue").textValue();
             String skillDescription = nodeSkill.get("Description").get("DefaultValue").textValue();
+
+
             int skillCooldown = nodeSkill.get("Cooldown").intValue();
             String skillMultiplierFormula = nodeSkill.findPath("MultiplierFormula").textValue();
 
