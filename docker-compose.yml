@@ -14,7 +14,6 @@ services:
       - "3307:3306"
     expose:
       - "3306"
-    user: "1000:50"
     volumes:
       - db_raid_volume:/var/lib/mysql/
 

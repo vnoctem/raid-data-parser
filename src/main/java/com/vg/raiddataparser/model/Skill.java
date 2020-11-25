@@ -1,23 +1,29 @@
 package com.vg.raiddataparser.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 public class Skill {
 
     @Id
     private int id;
+
+    @ManyToOne
+    @JoinColumn(name="champion_id")
+    private Champion champion;
+
     private int revision;
+
     private String name;
+
     @Column(length = 1000000)
     private String description;
+
     private int cooldown;
+
     private String multiplierFormula;
 
-    public Skill() {
-    }
+    public Skill() {}
 
     public Skill(int id, int revision, String name, String description, int cooldown, String multiplierFormula) {
         this.id = id;
@@ -28,53 +34,33 @@ public class Skill {
         this.multiplierFormula = multiplierFormula;
     }
 
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public void setId(int id) { this.id = id; }
 
-    public int getRevision() {
-        return revision;
-    }
+    public int getRevision() { return revision; }
 
-    public void setRevision(int revision) {
-        this.revision = revision;
-    }
+    public void setRevision(int revision) { this.revision = revision; }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public void setName(String name) { this.name = name; }
 
-    public String getDescription() {
-        return description;
-    }
+    public String getDescription() { return description; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public void setDescription(String description) { this.description = description; }
 
-    public int getCooldown() {
-        return cooldown;
-    }
+    public int getCooldown() { return cooldown; }
 
-    public void setCooldown(int cooldown) {
-        this.cooldown = cooldown;
-    }
+    public void setCooldown(int cooldown) { this.cooldown = cooldown; }
 
-    public String getMultiplierFormula() {
-        return multiplierFormula;
-    }
+    public String getMultiplierFormula() { return multiplierFormula; }
 
-    public void setMultiplierFormula(String multiplierFormula) {
-        this.multiplierFormula = multiplierFormula;
-    }
+    public void setMultiplierFormula(String multiplierFormula) { this.multiplierFormula = multiplierFormula; }
+
+    public Champion getChampion() { return champion; }
+
+    public void setChampion(Champion champion) { this.champion = champion; }
 
     @Override
     public String toString() {

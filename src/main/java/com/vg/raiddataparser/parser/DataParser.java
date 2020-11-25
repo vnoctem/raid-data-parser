@@ -1,5 +1,6 @@
 package com.vg.raiddataparser.parser;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 @Component
 public class DataParser {
@@ -47,22 +49,19 @@ public class DataParser {
             e.printStackTrace();
         }
 
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode rootNode = null;
         try {
-            rootNode = mapper.readTree(inputStream);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(inputStream);
+
+            parseChampionData(rootNode, mapper);
+            //parseSkillData(rootNode, mapper);
         } catch (IOException e) {
             System.out.println("Error while parsing JSON from file");
             e.printStackTrace();
         }
-        assert rootNode != null : "Error: root node is null";
-
-        // TODO: disable comment
-        //parseChampionData(rootNode);
-        parseSkillData(rootNode);
     }
 
-    private void parseChampionData(JsonNode rootNode) {
+    private void parseChampionData(JsonNode rootNode, ObjectMapper mapper) {
 
         System.out.println("TESTVGR parseChampionData BEGIN");
 
@@ -78,11 +77,43 @@ public class DataParser {
                     && nodeChampion.get("Fraction").intValue() != 0) {
 
                 int championId = nodeChampion.get("Id").intValue();
-                String championName = nodeChampion.get("Name").get("DefaultValue").textValue();
+
+                // Get the StaticDataLocalization node for the championName
+                JsonNode nodeStaticDataLocalization = rootNode.get(JSON_STATIC_DATA_LOCALIZATION_NODE);
+                String championNameKey = nodeChampion.get("Name").get("Key").textValue();
+                String championName = nodeStaticDataLocalization.findPath(championNameKey).textValue();
+
                 int championAffinity = nodeChampion.get("Element").intValue();
                 int championRole = nodeChampion.get("Role").intValue();
                 int championFaction = nodeChampion.get("Fraction").intValue();
                 int championRarity = nodeChampion.get("Rarity").intValue();
+
+                // TODO: Add Skills to a champion
+                JsonNode nodeSkillData = rootNode.get(JSON_SKILL_DATA_NODE);
+                ArrayNode nodeSkills = (ArrayNode) nodeSkillData.get(JSON_SKILLS_NODE);
+
+                try {
+                    System.out.println("testvgr nodeChampion.findPath(\"SkillTypeIds\").toString() = " + nodeChampion.findPath("SkillTypeIds").toString());
+                    List<Integer> championSkillsIds = mapper.readValue(nodeChampion.findPath("SkillTypeIds").toString(), new TypeReference<List<Integer>>(){});
+
+                    for (int championSkillId:championSkillsIds) {
+                        System.out.println("testvgr championName: " + championName);
+                        System.out.println("testvgr championSkillId: " + championSkillId);
+
+
+                        // TODO: create skills of a champion when creating the champion
+                        System.out.println("testvgr nodeSkills.findPath(\"Id\").intValue() = " + nodeSkills.findPath("Id").intValue());
+                        if (nodeSkills.findPath("Id").intValue() == championSkillId) {
+                            System.out.println("testvgr create skill for: " + championSkillId);
+                        }
+                    }
+
+
+                } catch (IOException e) {
+                    System.out.println("Error while parsing champion's skills for champion id: " + championId);
+                    e.printStackTrace();
+                }
+
 
                 Champion champion = new Champion(
                         championId,
@@ -98,7 +129,7 @@ public class DataParser {
         }
     }
 
-    private void parseSkillData(JsonNode rootNode) {
+    private void parseSkillData(JsonNode rootNode, ObjectMapper mapper) {
 
         System.out.println("TESTVGR parseSkillData BEGIN");
 
@@ -110,18 +141,30 @@ public class DataParser {
             int skillId = nodeSkill.get("Id").intValue();
             int skillRevision = nodeSkill.get("Revision").intValue();
 
-            // FIXME: Get the StaticDataLocalization for the skillName and skillDescription values
+            // Get the StaticDataLocalization node for the skillName and skillDescription values
             JsonNode nodeStaticDataLocalization = rootNode.get(JSON_STATIC_DATA_LOCALIZATION_NODE);
             String skillNameKey = nodeSkill.get("Name").get("Key").textValue();
             String skillName = nodeStaticDataLocalization.findPath(skillNameKey).textValue();
 
-
-            //String skillName = nodeSkill.get("Name").get("DefaultValue").textValue();
-            String skillDescription = nodeSkill.get("Description").get("DefaultValue").textValue();
-
+            String skillDescriptionKey = nodeSkill.get("Description").get("Key").textValue();
+            String skillDescription = nodeStaticDataLocalization.findPath(skillDescriptionKey).textValue();
 
             int skillCooldown = nodeSkill.get("Cooldown").intValue();
             String skillMultiplierFormula = nodeSkill.findPath("MultiplierFormula").textValue();
+
+            // TODO: A skill must be owned by (linked to) a champion (ManyToOne)
+            JsonNode nodeChampionData = rootNode.get(JSON_CHAMPION_DATA_NODE);
+            String skillChampionId = nodeChampionData.findPath("SkillTypeIds").textValue();
+            try {
+                List<String> championSkillsIds = mapper.readValue(nodeChampionData.findPath("SkillTypeIds").asText(), new TypeReference<List<String>>(){});
+
+                for (String championSkillsId:championSkillsIds) {
+
+                }
+            } catch (IOException e) {
+                //System.out.println("Error while parsing champion's skills for champion id: " + championId);
+                e.printStackTrace();
+            }
 
             Skill skill = new Skill(
                     skillId,
