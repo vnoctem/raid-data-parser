@@ -25,13 +25,14 @@ public class Skill {
 
     public Skill() {}
 
-    public Skill(int id, int revision, String name, String description, int cooldown, String multiplierFormula) {
+    public Skill(int id, int revision, String name, String description, int cooldown, String multiplierFormula, Champion champion) {
         this.id = id;
         this.revision = revision;
         this.name = name;
         this.description = description;
         this.cooldown = cooldown;
         this.multiplierFormula = multiplierFormula;
+        this.champion = champion;
     }
 
     public int getId() { return id; }

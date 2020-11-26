@@ -36,7 +36,6 @@ public class DataParser {
     // Method called after bean initialization
     @PostConstruct
     public void parseData() {
-        System.out.println("TESTVGR parseData BEGIN");
 
         InputStream inputStream = null;
         try {
@@ -63,18 +62,15 @@ public class DataParser {
 
     private void parseChampionData(JsonNode rootNode, ObjectMapper mapper) {
 
-        System.out.println("TESTVGR parseChampionData BEGIN");
-
         JsonNode nodeChampionData = rootNode.get(JSON_CHAMPION_DATA_NODE);
         ArrayNode nodeChampions = (ArrayNode) nodeChampionData.get(JSON_CHAMPIONS_NODE);
 
-        for (JsonNode nodeChampion:nodeChampions) {
+        for (JsonNode nodeChampion : nodeChampions) {
 
             // Filter out unwanted champions
             // - with no AwakenMaterials (not fully ascended, where applicable)
             // - with faction values different than 0 (bosses, demon lord, pve waves)
-            if (!nodeChampion.has("AwakenMaterials")
-                    && nodeChampion.get("Fraction").intValue() != 0) {
+            if (!nodeChampion.has("AwakenMaterials") && nodeChampion.get("Fraction").intValue() != 0) {
 
                 int championId = nodeChampion.get("Id").intValue();
 
@@ -88,33 +84,6 @@ public class DataParser {
                 int championFaction = nodeChampion.get("Fraction").intValue();
                 int championRarity = nodeChampion.get("Rarity").intValue();
 
-                // TODO: Add Skills to a champion
-                JsonNode nodeSkillData = rootNode.get(JSON_SKILL_DATA_NODE);
-                ArrayNode nodeSkills = (ArrayNode) nodeSkillData.get(JSON_SKILLS_NODE);
-
-                try {
-                    System.out.println("testvgr nodeChampion.findPath(\"SkillTypeIds\").toString() = " + nodeChampion.findPath("SkillTypeIds").toString());
-                    List<Integer> championSkillsIds = mapper.readValue(nodeChampion.findPath("SkillTypeIds").toString(), new TypeReference<List<Integer>>(){});
-
-                    for (int championSkillId:championSkillsIds) {
-                        System.out.println("testvgr championName: " + championName);
-                        System.out.println("testvgr championSkillId: " + championSkillId);
-
-
-                        // TODO: create skills of a champion when creating the champion
-                        System.out.println("testvgr nodeSkills.findPath(\"Id\").intValue() = " + nodeSkills.findPath("Id").intValue());
-                        if (nodeSkills.findPath("Id").intValue() == championSkillId) {
-                            System.out.println("testvgr create skill for: " + championSkillId);
-                        }
-                    }
-
-
-                } catch (IOException e) {
-                    System.out.println("Error while parsing champion's skills for champion id: " + championId);
-                    e.printStackTrace();
-                }
-
-
                 Champion champion = new Champion(
                         championId,
                         championName,
@@ -124,60 +93,59 @@ public class DataParser {
                         championRarity);
 
                 championRepository.save(champion);
-                //System.out.println(champion.toString());
+
+                // Get SkillData node
+                JsonNode nodeSkillData = rootNode.get(JSON_SKILL_DATA_NODE);
+                ArrayNode nodeSkills = (ArrayNode) nodeSkillData.get(JSON_SKILLS_NODE);
+
+                try {
+                    // Get the Champion's skills IDs as a List
+                    List<Integer> championSkillsIds = mapper.readValue(nodeChampion.findPath("SkillTypeIds").toString(), new TypeReference<List<Integer>>() {});
+
+                    for (int championSkillId : championSkillsIds) {
+
+                        for (int i = 0; i < nodeSkills.size(); i++) {
+
+                            // Create a new Skill for skill ID found
+                            if (nodeSkills.get(i).findPath("Id").intValue() == championSkillId) {
+                                skillRepository.save(createSkill(rootNode, nodeSkills.get(i), champion));
+
+                                // Remove node to have less nodes to loop through in the next iteration
+                                nodeSkills.remove(i);
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    System.out.println("Error while parsing champion's skills for champion id: " + championId);
+                    e.printStackTrace();
+                }
             }
         }
     }
 
-    private void parseSkillData(JsonNode rootNode, ObjectMapper mapper) {
+    private Skill createSkill(JsonNode rootNode, JsonNode nodeSkill, Champion champion) {
 
-        System.out.println("TESTVGR parseSkillData BEGIN");
+        int skillId = nodeSkill.get("Id").intValue();
+        int skillRevision = nodeSkill.get("Revision").intValue();
+        int skillCooldown = nodeSkill.get("Cooldown").intValue();
+        String skillMultiplierFormula = nodeSkill.findPath("MultiplierFormula").textValue();
 
-        JsonNode nodeSkillData = rootNode.get(JSON_SKILL_DATA_NODE);
-        ArrayNode nodeSkills = (ArrayNode) nodeSkillData.get(JSON_SKILLS_NODE);
+        // Get the StaticDataLocalization node for the skillName and skillDescription values
+        JsonNode nodeStaticDataLocalization = rootNode.get(JSON_STATIC_DATA_LOCALIZATION_NODE);
+        String skillNameKey = nodeSkill.get("Name").get("Key").textValue();
+        String skillName = nodeStaticDataLocalization.findPath(skillNameKey).textValue();
+        String skillDescriptionKey = nodeSkill.get("Description").get("Key").textValue();
+        String skillDescription = nodeStaticDataLocalization.findPath(skillDescriptionKey).textValue();
 
-        for (JsonNode nodeSkill:nodeSkills) {
-
-            int skillId = nodeSkill.get("Id").intValue();
-            int skillRevision = nodeSkill.get("Revision").intValue();
-
-            // Get the StaticDataLocalization node for the skillName and skillDescription values
-            JsonNode nodeStaticDataLocalization = rootNode.get(JSON_STATIC_DATA_LOCALIZATION_NODE);
-            String skillNameKey = nodeSkill.get("Name").get("Key").textValue();
-            String skillName = nodeStaticDataLocalization.findPath(skillNameKey).textValue();
-
-            String skillDescriptionKey = nodeSkill.get("Description").get("Key").textValue();
-            String skillDescription = nodeStaticDataLocalization.findPath(skillDescriptionKey).textValue();
-
-            int skillCooldown = nodeSkill.get("Cooldown").intValue();
-            String skillMultiplierFormula = nodeSkill.findPath("MultiplierFormula").textValue();
-
-            // TODO: A skill must be owned by (linked to) a champion (ManyToOne)
-            JsonNode nodeChampionData = rootNode.get(JSON_CHAMPION_DATA_NODE);
-            String skillChampionId = nodeChampionData.findPath("SkillTypeIds").textValue();
-            try {
-                List<String> championSkillsIds = mapper.readValue(nodeChampionData.findPath("SkillTypeIds").asText(), new TypeReference<List<String>>(){});
-
-                for (String championSkillsId:championSkillsIds) {
-
-                }
-            } catch (IOException e) {
-                //System.out.println("Error while parsing champion's skills for champion id: " + championId);
-                e.printStackTrace();
-            }
-
-            Skill skill = new Skill(
-                    skillId,
-                    skillRevision,
-                    skillName,
-                    skillDescription,
-                    skillCooldown,
-                    skillMultiplierFormula
-            );
-
-            skillRepository.save(skill);
-            //System.out.println(skill.toString());
-        }
+        return new Skill(
+                skillId,
+                skillRevision,
+                skillName,
+                skillDescription,
+                skillCooldown,
+                skillMultiplierFormula,
+                champion
+        );
     }
 
 }
