@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.vg.raiddataparser.GoogleSpreadsheetBuilder;
 import com.vg.raiddataparser.model.Champion;
 import com.vg.raiddataparser.model.Skill;
 import com.vg.raiddataparser.repository.ChampionRepository;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.GeneralSecurityException;
 import java.util.List;
 
 @Component
@@ -35,7 +37,15 @@ public class DataParser {
 
     // Method called after bean initialization
     @PostConstruct
-    public void parseData() {
+    private void parseData() {
+
+        System.out.println("vgr parseData()");
+        try {
+            System.out.println("vgr call to GoogleSpreadsheetBuilder.create()");
+            GoogleSpreadsheetBuilder.create();
+        } catch (IOException | GeneralSecurityException e) {
+            e.printStackTrace();
+        }
 
         InputStream inputStream = null;
         try {
@@ -52,7 +62,7 @@ public class DataParser {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode rootNode = mapper.readTree(inputStream);
 
-            parseChampionData(rootNode, mapper);
+            //parseChampionData(rootNode, mapper);
             //parseSkillData(rootNode, mapper);
         } catch (IOException e) {
             System.out.println("Error while parsing JSON from file");
@@ -66,7 +76,6 @@ public class DataParser {
         ArrayNode nodeChampions = (ArrayNode) nodeChampionData.get(JSON_CHAMPIONS_NODE);
 
         for (JsonNode nodeChampion : nodeChampions) {
-
             // Filter out unwanted champions
             // - with no AwakenMaterials (not fully ascended, where applicable)
             // - with faction values different than 0 (bosses, demon lord, pve waves)
@@ -103,9 +112,7 @@ public class DataParser {
                     List<Integer> championSkillsIds = mapper.readValue(nodeChampion.findPath("SkillTypeIds").toString(), new TypeReference<List<Integer>>() {});
 
                     for (int championSkillId : championSkillsIds) {
-
                         for (int i = 0; i < nodeSkills.size(); i++) {
-
                             // Create a new Skill for skill ID found
                             if (nodeSkills.get(i).findPath("Id").intValue() == championSkillId) {
                                 skillRepository.save(createSkill(rootNode, nodeSkills.get(i), champion));
@@ -147,5 +154,4 @@ public class DataParser {
                 champion
         );
     }
-
 }
