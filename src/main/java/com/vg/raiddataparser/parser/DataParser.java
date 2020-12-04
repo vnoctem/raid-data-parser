@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.vg.raiddataparser.GoogleSpreadsheetBuilder;
+import com.vg.raiddataparser.googlesheets.GoogleSheetRaidData;
 import com.vg.raiddataparser.model.Champion;
 import com.vg.raiddataparser.model.Skill;
 import com.vg.raiddataparser.repository.ChampionRepository;
@@ -41,8 +41,8 @@ public class DataParser {
 
         System.out.println("vgr parseData()");
         try {
-            System.out.println("vgr call to GoogleSpreadsheetBuilder.create()");
-            GoogleSpreadsheetBuilder.create();
+            System.out.println("vgr new GoogleSheetRaidData()");
+            GoogleSheetRaidData sheetRaidData = new GoogleSheetRaidData();
         } catch (IOException | GeneralSecurityException e) {
             e.printStackTrace();
         }
@@ -51,10 +51,10 @@ public class DataParser {
         try {
             inputStream = new URL(JSON_DATA_URL).openStream();
         } catch (MalformedURLException e) {
-            System.out.println("MalformedURLException");
+            System.err.println("URL is invalid: MalformedURLException");
             e.printStackTrace();
         } catch (IOException e) {
-            System.out.println("Error while getting JSON from specified URL");
+            System.err.println("Error while getting JSON from specified URL");
             e.printStackTrace();
         }
 
@@ -65,7 +65,7 @@ public class DataParser {
             //parseChampionData(rootNode, mapper);
             //parseSkillData(rootNode, mapper);
         } catch (IOException e) {
-            System.out.println("Error while parsing JSON from file");
+            System.err.println("Error while parsing JSON from file");
             e.printStackTrace();
         }
     }
