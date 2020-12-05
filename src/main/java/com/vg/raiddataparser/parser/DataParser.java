@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.vg.raiddataparser.googlesheets.GoogleSheetRaidData;
+import com.vg.raiddataparser.googleapis.sheets.GoogleSheetRaidData;
 import com.vg.raiddataparser.model.Champion;
 import com.vg.raiddataparser.model.Skill;
 import com.vg.raiddataparser.repository.ChampionRepository;
