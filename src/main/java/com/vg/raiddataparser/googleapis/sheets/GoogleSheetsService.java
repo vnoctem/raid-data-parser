@@ -24,6 +24,7 @@ public class GoogleSheetsService {
     }
 
     public Spreadsheet createSpreadsheet(SpreadsheetProperties properties) throws IOException {
+        LOGGER.info("Creating new spreadsheet");
         Spreadsheet spreadsheet = new Spreadsheet().setProperties(properties);
         return Objects.requireNonNull(sheetsService).spreadsheets().create(spreadsheet).execute();
     }

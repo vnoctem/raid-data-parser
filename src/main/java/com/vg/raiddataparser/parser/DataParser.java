@@ -40,12 +40,8 @@ public class DataParser {
     private void parseData() {
 
         System.out.println("vgr parseData()");
-        try {
-            System.out.println("vgr new GoogleSheetRaidData()");
-            GoogleSheetRaidData sheetRaidData = new GoogleSheetRaidData();
-        } catch (IOException | GeneralSecurityException e) {
-            e.printStackTrace();
-        }
+        System.out.println("vgr new GoogleSheetRaidData()");
+        GoogleSheetRaidData sheetRaidData = new GoogleSheetRaidData();
 
         InputStream inputStream = null;
         try {

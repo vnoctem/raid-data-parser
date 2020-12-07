@@ -46,8 +46,6 @@ public class GoogleDriveService {
     public boolean fileExists(String id) throws IOException {
         List<File> files = getFiles();
         for (File file : files) {
-            System.out.println("fileExists getId: " + file.getId());
-            System.out.println("fileExists getTrashed: " + file.getTrashed());
             if (id.equals(file.getId()) && !file.getTrashed()) {
                 return true;
             }
