@@ -34,3 +34,4 @@ build/
 
 ### RaidDataParser ###
 oauth2.0_tokens
+/src/main/resources/spreadsheet_id.txt
