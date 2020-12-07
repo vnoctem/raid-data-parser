@@ -1,10 +1,7 @@
 package com.vg.raiddataparser.googleapis.sheets;
 
-import com.google.api.client.googleapis.json.GoogleJsonResponseException;
-import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.SpreadsheetProperties;
-import com.vg.raiddataparser.googleapis.GoogleServiceUtil;
 import com.vg.raiddataparser.googleapis.drive.GoogleDriveService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +18,6 @@ public class GoogleSheetRaidData {
     private final GoogleDriveService driveService = new GoogleDriveService();
     private final GoogleSheetsService sheetsService = new GoogleSheetsService();
 
-    private final static String SPREADSHEET_ID = "1httPAXX73P6suWGPlmC0xHMVt8wyXFQDGsI60L2QzhM";
     private final static String SPREADSHEET_ID_FILE_NAME = "/spreadsheet_id.txt";
     private final static String RESOURCES_PATH = "src/main/resources";
 
@@ -31,19 +27,29 @@ public class GoogleSheetRaidData {
 
     private void initializeRaidData() {
 
+        File file = new File(RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME);
+        String title = "RSL - Champions' multipliers (last updated: " + getCurrentDateFormatyyyyMMdd() + ")";
+        SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(title);
+
         try {
-            if (!driveService.fileExists(readSpreadsheetId(RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME))) {
-                LOGGER.info("Creating spreadsheet...");
+            if (file.exists()) { // spreadsheet_id.txt exists
+                String spreadsheetId = readSpreadsheetId(file);
 
-                String title = "RSL - Champions' multipliers (last updated: " + getCurrentDateFormatyyyyMMdd() + ")";
-                SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(title);
-                Spreadsheet result = sheetsService.createSpreadsheet(properties);
-                writeSpreadsheetId(RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME, result.getSpreadsheetId());
-            } else {
-                LOGGER.info("Spreadsheet already exists");
-
+                if (driveService.fileExists(spreadsheetId)) { // spreadsheet with corresponding ID exists on Drive
+                    LOGGER.info("Spreadsheet already exists on Drive");
+                    //TODO: Update Raid data
+                    LOGGER.info("Updating Raid data (to do)");
+                } else { // spreadsheet with corresponding ID doesn't exist on Drive
+                    Spreadsheet result = sheetsService.createSpreadsheet(properties);
+                    writeSpreadsheetId(file, result.getSpreadsheetId());
+                }
+            } else { // spreadsheet_id.txt doesn't exist
+                LOGGER.info("Creating new local file " + file.getAbsolutePath());
+                if (file.createNewFile()) {
+                    Spreadsheet result = sheetsService.createSpreadsheet(properties);
+                    writeSpreadsheetId(file, result.getSpreadsheetId());
+                }
             }
-
         } catch (IOException e) {
             throw new RuntimeException("Error occurred when creating spreadsheet. Operation will be aborted.", e);
         }
@@ -55,27 +61,9 @@ public class GoogleSheetRaidData {
         return dateFormatter.format(date);
     }
 
-    private boolean fileExists(String path) {
-        File file = new File(path);
-        return file.exists();
-    }
-
-    private File createFile() throws IOException {
-        System.out.println("vgr createFile - file path: " + RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME);
-
-        File file = new File(RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME);
-
-        if (file.createNewFile()) {
-            System.out.println("File is created");
-        } else {
-            System.out.println("File already exists");
-        }
-        return file;
-    }
-
-    private void writeSpreadsheetId(String fileName, String spreadsheetId) throws IOException {
+    private void writeSpreadsheetId(File f, String spreadsheetId) throws IOException {
         LOGGER.info("Writing spreadsheet ID to file");
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, false))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(f, false))) {
             writer.write(spreadsheetId);
         } catch (IOException e) {
             throw new IOException("Error occurred when writing spreadsheet ID to file \""
@@ -84,9 +72,9 @@ public class GoogleSheetRaidData {
         }
     }
 
-    private String readSpreadsheetId(String fileName) throws IOException {
+    private String readSpreadsheetId(File f) throws IOException {
         LOGGER.info("Retrieving spreadsheet ID from file");
-        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(f))) {
             return reader.readLine();
         } catch (IOException e) {
             throw new IOException("Error occurred when retrieving spreadsheet ID from file \""

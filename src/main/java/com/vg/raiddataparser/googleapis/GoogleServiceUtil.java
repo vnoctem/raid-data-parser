@@ -36,10 +36,7 @@ public final class GoogleServiceUtil {
 
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
-    //private static final String REFRESH_TOKEN = "1//04HHDsFDz7OAVCgYIARAAGAQSNwF-L9Irym9EJnbS-gtLftgKcx_GrPhC7vhRtCwg6_hJzrAT0-99B8RrCOoMUaiU0tCj40PQZOA";
-
     private GoogleServiceUtil() {}
-
 
     /**
      * Authorize the user with the credentials in google-oauth-credentials.json
@@ -49,7 +46,7 @@ public final class GoogleServiceUtil {
      * @throws IOException
      */
     private static Credential authorize(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
-        LOGGER.info("Authorize user");
+        LOGGER.info("Authorizing user");
 
         // Load client secrets
         InputStream in = GoogleServiceUtil.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
