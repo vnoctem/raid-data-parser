@@ -1,8 +1,9 @@
-package com.vg.raiddataparser.googleapis.sheets;
+package com.vg.raiddataparser.googleservices;
 
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.SpreadsheetProperties;
-import com.vg.raiddataparser.googleapis.drive.GoogleDriveService;
+import com.vg.raiddataparser.googleservices.drive.GoogleDriveService;
+import com.vg.raiddataparser.googleservices.sheets.GoogleSheetsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -4,11 +4,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.vg.raiddataparser.googleapis.sheets.GoogleSheetRaidData;
+import com.vg.raiddataparser.googleservices.GoogleSheetRaidData;
 import com.vg.raiddataparser.model.Champion;
 import com.vg.raiddataparser.model.Skill;
 import com.vg.raiddataparser.repository.ChampionRepository;
 import com.vg.raiddataparser.repository.SkillRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.GeneralSecurityException;
 import java.util.List;
 
 @Component
@@ -27,6 +28,8 @@ public class DataParser {
     private ChampionRepository championRepository;
     @Autowired
     private SkillRepository skillRepository;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataParser.class.getName());
 
     private static final String JSON_DATA_URL = "https://raw.githubusercontent.com/Da-Teach/RaidStaticData/master/static_data.json";
     private static final String JSON_CHAMPION_DATA_NODE = "HeroData";
@@ -39,30 +42,24 @@ public class DataParser {
     @PostConstruct
     private void parseData() {
 
-        System.out.println("vgr parseData()");
-        System.out.println("vgr new GoogleSheetRaidData()");
+        LOGGER.info("Parsing data...");
         GoogleSheetRaidData sheetRaidData = new GoogleSheetRaidData();
 
         InputStream inputStream = null;
         try {
             inputStream = new URL(JSON_DATA_URL).openStream();
         } catch (MalformedURLException e) {
-            System.err.println("URL is invalid: MalformedURLException");
-            e.printStackTrace();
+            LOGGER.error("URL is invalid: MalformedURLException", e);
         } catch (IOException e) {
-            System.err.println("Error while getting JSON from specified URL");
-            e.printStackTrace();
+            LOGGER.error("Error while getting JSON from specified URL", e);
         }
 
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode rootNode = mapper.readTree(inputStream);
-
-            //parseChampionData(rootNode, mapper);
-            //parseSkillData(rootNode, mapper);
+            parseChampionData(rootNode, mapper);
         } catch (IOException e) {
-            System.err.println("Error while parsing JSON from file");
-            e.printStackTrace();
+            LOGGER.error("Error while parsing JSON from file", e);
         }
     }
 
@@ -89,14 +86,34 @@ public class DataParser {
                 int championFaction = nodeChampion.get("Fraction").intValue();
                 int championRarity = nodeChampion.get("Rarity").intValue();
 
-                Champion champion = new Champion(
-                        championId,
-                        championName,
-                        championAffinity,
-                        championRole,
-                        championFaction,
-                        championRarity);
+                JsonNode nodeBaseStats = nodeChampion.get("BaseStats");
+                long championHealth = nodeBaseStats.get("Health").longValue();
+                long championAttack = nodeBaseStats.get("Attack").longValue();
+                long championDefense = nodeBaseStats.get("Defence").longValue();
+                long championSpeed = nodeBaseStats.get("Speed").longValue();
+                long championResistance = nodeBaseStats.get("Resistance").longValue();
+                long championAccuracy = nodeBaseStats.get("Accuracy").longValue();
+                long championCriticalChance = nodeBaseStats.get("CriticalChance").longValue();
+                long championCriticalDamage = nodeBaseStats.get("CriticalDamage").longValue();
 
+                Champion champion = new Champion.Builder()
+                        .setId(championId)
+                        .setName(championName)
+                        .setAffinity(championAffinity)
+                        .setRole(championRole)
+                        .setFaction(championFaction)
+                        .setRarity(championRarity)
+                        .setHealth(calculateHealth(championHealth))
+                        .setAttack(calculateAttack(championAttack))
+                        .setDefense(calculateDefense(championDefense))
+                        .setSpeed(calculateSpeed(championSpeed))
+                        .setResistance(calculateResistance(championResistance))
+                        .setAccuracy(calculateAccuracy(championAccuracy))
+                        .setCriticalChance(calculateCriticalChance(championCriticalChance))
+                        .setCriticalDamage(calculateCriticalDamage(championCriticalDamage))
+                        .build();
+
+                // Save Champion in database
                 championRepository.save(champion);
 
                 // Get SkillData node
@@ -105,12 +122,17 @@ public class DataParser {
 
                 try {
                     // Get the Champion's skills IDs as a List
-                    List<Integer> championSkillsIds = mapper.readValue(nodeChampion.findPath("SkillTypeIds").toString(), new TypeReference<List<Integer>>() {});
+                    // (using findPath() because get() will cause an error if specified node doesn't exist
+                    List<Integer> championSkillsIds = mapper.readValue(nodeChampion.findPath("SkillTypeIds").toString(),
+                            new TypeReference<List<Integer>>() {});
 
                     for (int championSkillId : championSkillsIds) {
                         for (int i = 0; i < nodeSkills.size(); i++) {
+
                             // Create a new Skill for skill ID found
                             if (nodeSkills.get(i).findPath("Id").intValue() == championSkillId) {
+
+                                // Save Skill in database
                                 skillRepository.save(createSkill(rootNode, nodeSkills.get(i), champion));
 
                                 // Remove node to have less nodes to loop through in the next iteration
@@ -119,8 +141,8 @@ public class DataParser {
                         }
                     }
                 } catch (IOException e) {
-                    System.out.println("Error while parsing champion's skills for champion id: " + championId);
-                    e.printStackTrace();
+                    LOGGER.error("Error while parsing champion's skills for champion (ID, name): " + championId + ", " + championName,
+                            e);
                 }
             }
         }
@@ -149,5 +171,56 @@ public class DataParser {
                 skillMultiplierFormula,
                 champion
         );
+    }
+
+    // For health only, multiple value returned of getRealScalableStatValue by 15
+    private int calculateHealth(long rawHealth) {
+        return calculateScalableStatValue(rawHealth) * 15;
+    }
+
+    private int calculateAttack(long rawAttack) {
+        return calculateScalableStatValue(rawAttack);
+    }
+
+    private int calculateDefense(long rawDefense) {
+        return calculateScalableStatValue(rawDefense);
+    }
+
+    private int calculateSpeed(long rawSpeed) {
+        return calculateBaseStatValue(rawSpeed);
+    }
+
+    private int calculateResistance(long rawResistance) {
+        return calculateBaseStatValue(rawResistance);
+    }
+
+    private int calculateAccuracy(long rawAccuracy) {
+        return calculateBaseStatValue(rawAccuracy);
+    }
+
+    private int calculateCriticalChance(long rawCriticalChance) {
+        return calculateBaseStatValue(rawCriticalChance);
+    }
+
+    private int calculateCriticalDamage(long rawCriticalDamage) {
+        return calculateBaseStatValue(rawCriticalDamage);
+    }
+
+    /* For scalable stats (health, attack, defence)
+     * Formula: BASE STAT * MULTIPLIER_1 * MULTIPLIER_2
+     * Ascension level | MULTIPLIER_1 | MULTIPLIER_2
+     *        1        |  1           |  2
+     *        2        |  1.60000002  |  1.89999998
+     *        3        |  2.43199992  |  1.79999995
+     *        4        |  3.50207996  |  1.70000005
+     *        5        |  4.76282883  |  1.70000005
+     *        6        |  6.47744703  |  1.70000005
+     */
+    private int calculateScalableStatValue(long scalableStat) {
+        return (int) Math.round(calculateBaseStatValue(scalableStat) * 6.47744703 * 1.70000005);
+    }
+
+    private int calculateBaseStatValue(long stat) {
+        return (int) (stat / (Integer.MAX_VALUE * 2L - 1));
     }
 }

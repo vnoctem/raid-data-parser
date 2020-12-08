@@ -1,4 +1,4 @@
-package com.vg.raiddataparser.googleapis;
+package com.vg.raiddataparser.googleservices;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
