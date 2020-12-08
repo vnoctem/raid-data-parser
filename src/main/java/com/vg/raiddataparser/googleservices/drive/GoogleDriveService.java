@@ -1,9 +1,9 @@
-package com.vg.raiddataparser.googleapis.drive;
+package com.vg.raiddataparser.googleservices.drive;
 
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
-import com.vg.raiddataparser.googleapis.GoogleServiceUtil;
+import com.vg.raiddataparser.googleservices.GoogleServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
