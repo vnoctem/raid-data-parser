@@ -4,9 +4,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.vg.raiddataparser.googleservices.GoogleSheetRaidData;
-import com.vg.raiddataparser.model.Champion;
+import com.vg.raiddataparser.googleservices.SpreadsheetRaidData;
+import com.vg.raiddataparser.model.champion.Champion;
 import com.vg.raiddataparser.model.Skill;
+import com.vg.raiddataparser.model.champion.ChampionAffinity;
 import com.vg.raiddataparser.repository.ChampionRepository;
 import com.vg.raiddataparser.repository.SkillRepository;
 import org.slf4j.Logger;
@@ -38,12 +39,13 @@ public class DataParser {
     private static final String JSON_SKILLS_NODE = "SkillTypes";
     private static final String JSON_STATIC_DATA_LOCALIZATION_NODE = "StaticDataLocalization";
 
+    private SpreadsheetRaidData spreadsheetRaidData;
+
     // Method called after bean initialization
     @PostConstruct
     private void parseData() {
 
-        LOGGER.info("Parsing data...");
-        GoogleSheetRaidData sheetRaidData = new GoogleSheetRaidData();
+        spreadsheetRaidData = new SpreadsheetRaidData();
 
         InputStream inputStream = null;
         try {
@@ -64,6 +66,7 @@ public class DataParser {
     }
 
     private void parseChampionData(JsonNode rootNode, ObjectMapper mapper) {
+        LOGGER.info("Parsing data...");
 
         JsonNode nodeChampionData = rootNode.get(JSON_CHAMPION_DATA_NODE);
         ArrayNode nodeChampions = (ArrayNode) nodeChampionData.get(JSON_CHAMPIONS_NODE);
@@ -113,8 +116,15 @@ public class DataParser {
                         .setCriticalDamage(calculateCriticalDamage(championCriticalDamage))
                         .build();
 
+                // TODO: review (save champion in DB)
                 // Save Champion in database
-                championRepository.save(champion);
+                // championRepository.save(champion);
+                try {
+                    spreadsheetRaidData.addChampionValues(champion);
+                } catch (IOException e) {
+                    LOGGER.error("Error while adding champion values for " + championName, e);
+                }
+
 
                 // Get SkillData node
                 JsonNode nodeSkillData = rootNode.get(JSON_SKILL_DATA_NODE);
@@ -132,8 +142,9 @@ public class DataParser {
                             // Create a new Skill for skill ID found
                             if (nodeSkills.get(i).findPath("Id").intValue() == championSkillId) {
 
+                                // TODO: review (save skill in DB)
                                 // Save Skill in database
-                                skillRepository.save(createSkill(rootNode, nodeSkills.get(i), champion));
+                                //skillRepository.save(createSkill(rootNode, nodeSkills.get(i), champion));
 
                                 // Remove node to have less nodes to loop through in the next iteration
                                 nodeSkills.remove(i);
@@ -146,6 +157,12 @@ public class DataParser {
                 }
             }
         }
+        try {
+            spreadsheetRaidData.populateSheetChampion();
+        } catch (IOException e) {
+            LOGGER.error("Error while populating sheet Champions", e);
+        }
+        LOGGER.info("Data parsing completed");
     }
 
     private Skill createSkill(JsonNode rootNode, JsonNode nodeSkill, Champion champion) {
@@ -222,5 +239,9 @@ public class DataParser {
 
     private int calculateBaseStatValue(long stat) {
         return (int) (stat / (Integer.MAX_VALUE * 2L - 1));
+    }
+
+    private String valueOfAffinity(int affinityCode) {
+        return ChampionAffinity.getName(affinityCode);
     }
 }

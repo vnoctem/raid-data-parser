@@ -1,32 +1,82 @@
 package com.vg.raiddataparser.googleservices.sheets;
 
 import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.model.Spreadsheet;
-import com.google.api.services.sheets.v4.model.SpreadsheetProperties;
+import com.google.api.services.sheets.v4.model.*;
 import com.vg.raiddataparser.googleservices.GoogleServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class GoogleSheetsService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GoogleSheetsService.class.getName());
-    private final Sheets sheetsService = GoogleServiceUtil.getSheetsService();
+    private static final Sheets SERVICE_SHEETS = GoogleServiceUtil.getSheetsService();
 
     public GoogleSheetsService() {
         LOGGER.info("Initializing GoogleSheetsService...");
-        if (sheetsService == null) {
+        if (SERVICE_SHEETS == null) {
             throw new NullPointerException("Error while initializing GoogleSheetsService: Sheets service is null.");
         }
         LOGGER.info("GoogleSheetsService initialized");
     }
 
-    public Spreadsheet createSpreadsheet(SpreadsheetProperties properties) throws IOException {
-        LOGGER.info("Creating new spreadsheet");
-        Spreadsheet spreadsheet = new Spreadsheet().setProperties(properties);
-        return Objects.requireNonNull(sheetsService).spreadsheets().create(spreadsheet).execute();
+    public Spreadsheet createSpreadsheet(SpreadsheetProperties properties, List<Sheet> sheets) throws IOException {
+        LOGGER.info("Creating spreadsheet " + properties.getTitle());
+        Spreadsheet spreadsheet = new Spreadsheet()
+                .setProperties(properties)
+                .setSheets(sheets);
+        return Objects.requireNonNull(SERVICE_SHEETS).spreadsheets().create(spreadsheet).execute();
+    }
+
+    public UpdateValuesResponse writeValuesSingleRange(Spreadsheet spreadsheet, ValueRange body, String range) throws IOException {
+        return Objects.requireNonNull(SERVICE_SHEETS).spreadsheets()
+                .values()
+                .update(spreadsheet.getSpreadsheetId(), range, body)
+                .setValueInputOption("RAW")
+                .execute();
+    }
+
+    public Spreadsheet getSpreadsheet(String id) throws IOException {
+        return Objects.requireNonNull(SERVICE_SHEETS).spreadsheets().get(id).execute();
+    }
+
+    public BatchUpdateSpreadsheetResponse createSheet(Spreadsheet spreadsheet,
+            SheetProperties properties) throws IOException {
+        LOGGER.info("Creating sheet " + properties.getTitle());
+        List<Request> requests = new ArrayList<>();
+        requests.add(new Request()
+                .setAddSheet(new AddSheetRequest()
+                        .setProperties(properties)));
+        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
+        requestBody.setRequests(requests);
+        requestBody.setIncludeSpreadsheetInResponse(true);
+
+        return Objects.requireNonNull(SERVICE_SHEETS)
+                .spreadsheets()
+                .batchUpdate(spreadsheet.getSpreadsheetId(), requestBody)
+                .execute();
+    }
+
+    public void renameSheet(Spreadsheet spreadsheet, SheetProperties properties) throws IOException {
+        LOGGER.info("Renaming sheet[" + properties.getSheetId() + "] to " + properties.getTitle());
+        List<Request> requests = new ArrayList<>();
+        requests.add(new Request()
+                .setUpdateSheetProperties(new UpdateSheetPropertiesRequest()
+                        .setFields("title")
+                        .setProperties(properties)));
+
+        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
+        requestBody.setRequests(requests);
+        requestBody.setIncludeSpreadsheetInResponse(true);
+
+        Objects.requireNonNull(SERVICE_SHEETS)
+                .spreadsheets()
+                .batchUpdate(spreadsheet.getSpreadsheetId(), requestBody)
+                .execute();
     }
 
 }

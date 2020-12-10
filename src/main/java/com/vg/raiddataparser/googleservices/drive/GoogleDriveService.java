@@ -15,11 +15,11 @@ import java.util.Objects;
 public class GoogleDriveService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GoogleDriveService.class.getName());
-    private final Drive driveService = GoogleServiceUtil.getDriveService();
+    private static final Drive SERVICE_DRIVE = GoogleServiceUtil.getDriveService();
 
     public GoogleDriveService() {
         LOGGER.info("Initializing GoogleDriveService...");
-        if (driveService == null) {
+        if (SERVICE_DRIVE == null) {
             throw new NullPointerException("Error while initializing GoogleDriveService: Drive service is null.");
         }
         LOGGER.info("GoogleDriveService initialized");
@@ -32,7 +32,7 @@ public class GoogleDriveService {
      * @throws IOException
      */
     private List<File> getFiles() throws IOException {
-        FileList result = Objects.requireNonNull(driveService).files().list().setFields("files(id, name, trashed)").execute();
+        FileList result = Objects.requireNonNull(SERVICE_DRIVE).files().list().setFields("files(id, name, trashed)").execute();
         return new ArrayList<>(result.getFiles());
     }
 
