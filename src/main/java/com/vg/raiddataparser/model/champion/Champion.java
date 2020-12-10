@@ -1,4 +1,6 @@
-package com.vg.raiddataparser.model;
+package com.vg.raiddataparser.model.champion;
+
+import com.vg.raiddataparser.model.Skill;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;

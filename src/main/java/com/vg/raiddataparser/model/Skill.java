@@ -1,5 +1,7 @@
 package com.vg.raiddataparser.model;
 
+import com.vg.raiddataparser.model.champion.Champion;
+
 import javax.persistence.*;
 
 @Entity
