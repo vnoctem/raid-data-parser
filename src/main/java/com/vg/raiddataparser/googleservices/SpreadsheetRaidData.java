@@ -3,8 +3,7 @@ package com.vg.raiddataparser.googleservices;
 import com.google.api.services.sheets.v4.model.*;
 import com.vg.raiddataparser.googleservices.drive.GoogleDriveService;
 import com.vg.raiddataparser.googleservices.sheets.GoogleSheetsService;
-import com.vg.raiddataparser.model.champion.Champion;
-import com.vg.raiddataparser.model.champion.ChampionAffinity;
+import com.vg.raiddataparser.model.champion.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +79,10 @@ public class SpreadsheetRaidData {
         championValues.add(
                 Arrays.asList(
                         c.getName(),
-                        ChampionAffinity.getName(c.getAffinity())
+                        ChampionAffinity.getName(c.getAffinity()),
+                        ChampionFaction.getName(c.getFaction()),
+                        ChampionRole.getName(c.getRole()),
+                        ChampionRarity.getName(c.getRarity())
                         /*c.getHealth(),
                         c.getAttack(),
                         c.getDefense(),

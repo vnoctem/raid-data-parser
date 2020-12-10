@@ -3,27 +3,27 @@ package com.vg.raiddataparser.model.champion;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum ChampionAffinity {
-    MAGIC(1),
-    FORCE(2),
-    SPIRIT(3),
-    VOID(4);
+public enum ChampionRole {
+    ATTACK(0),
+    DEFENSE(1),
+    HP(2),
+    SUPPORT(3);
 
     public final int code;
-    private static final Map<Integer, ChampionAffinity> CODE_TO_AFFINITY = new HashMap<>();
+    private static final Map<Integer, ChampionRole> CODE_TO_ROLE = new HashMap<>();
 
     static {
-        for (ChampionAffinity affinity : values()) {
-            CODE_TO_AFFINITY.put(affinity.code, affinity);
+        for (ChampionRole role : values()) {
+            CODE_TO_ROLE.put(role.code, role);
         }
     }
 
-    ChampionAffinity(int code) {
+    ChampionRole(int code) {
         this.code = code;
     }
 
     public static String getName(int code) {
-        return CODE_TO_AFFINITY.get(code).toString();
+        return code == 2 ? "HP" : CODE_TO_ROLE.get(code).toString();
     }
 
     @Override
