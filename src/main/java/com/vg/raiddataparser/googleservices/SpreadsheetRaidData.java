@@ -4,6 +4,10 @@ import com.google.api.services.sheets.v4.model.*;
 import com.vg.raiddataparser.googleservices.drive.GoogleDriveService;
 import com.vg.raiddataparser.googleservices.sheets.GoogleSheetsService;
 import com.vg.raiddataparser.model.champion.*;
+import com.vg.raiddataparser.model.champion.attributes.ChampionAffinity;
+import com.vg.raiddataparser.model.champion.attributes.ChampionFaction;
+import com.vg.raiddataparser.model.champion.attributes.ChampionRarity;
+import com.vg.raiddataparser.model.champion.attributes.ChampionRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,15 +23,16 @@ public class SpreadsheetRaidData {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpreadsheetRaidData.class.getName());
 
+    private final GoogleDriveService driveService = new GoogleDriveService();
+    private final GoogleSheetsService sheetsService = new GoogleSheetsService();
+
+    private final List<List<Object>> championValues = new ArrayList<>();
+
     private static final String SPREADSHEET_ID_FILE_NAME = "/spreadsheet_id.txt";
     private static final String RESOURCES_PATH = "src/main/resources";
     private static final String SHEET_CHAMPIONS_TITLE = "Champions";
     private static final String SHEET_SKILLS_TITLE = "Skills";
 
-    private final GoogleDriveService driveService = new GoogleDriveService();
-    private final GoogleSheetsService sheetsService = new GoogleSheetsService();
-
-    private final List<List<Object>> championValues = new ArrayList<>();
 
     public SpreadsheetRaidData() {
         initializeRaidData();
@@ -41,8 +46,18 @@ public class SpreadsheetRaidData {
         SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(title);
 
         List<Sheet> sheets = new ArrayList<>();
-        Sheet championSheet = new Sheet().setProperties(new SheetProperties().setTitle(SHEET_CHAMPIONS_TITLE));
-        Sheet skillSheet = new Sheet().setProperties(new SheetProperties().setTitle(SHEET_SKILLS_TITLE));
+
+        SheetProperties championSheetProperties = new SheetProperties();
+        championSheetProperties.setTitle(SHEET_CHAMPIONS_TITLE)
+                .setGridProperties(new GridProperties().setFrozenRowCount(1));
+
+        SheetProperties skillSheetProperties = new SheetProperties();
+        skillSheetProperties.setTitle(SHEET_SKILLS_TITLE)
+                .setGridProperties(new GridProperties().setFrozenRowCount(1));
+
+        Sheet championSheet = new Sheet().setProperties(championSheetProperties);
+        Sheet skillSheet = new Sheet().setProperties(skillSheetProperties);
+
         sheets.add(championSheet);
         sheets.add(skillSheet);
 
@@ -58,8 +73,7 @@ public class SpreadsheetRaidData {
                     LOGGER.info("Spreadsheet does not exist");
                     Spreadsheet result = sheetsService.createSpreadsheet(properties, sheets);
                     writeSpreadsheetId(file, result.getSpreadsheetId());
-
-                    //populateSpreadsheet(result);
+                    addChampionHeaderRow();
                 }
             } else { // spreadsheet_id.txt doesn't exist
                 LOGGER.info("Creating new local file " + file.getAbsolutePath());
@@ -73,89 +87,69 @@ public class SpreadsheetRaidData {
         }
     }
 
-    public void addChampionValues(Champion c) throws IOException {
-        LOGGER.info("Creating champion values for " + c.getName() + "...");
+    /**
+     * Add the Champion values to the List<List<Object>> championValues
+     * @param c Champion to be added
+     */
+    public void addChampionValues(Champion c) {
+        LOGGER.info("Creating row for " + c.getName() + "...");
 
-        championValues.add(
-                Arrays.asList(
-                        c.getName(),
-                        ChampionAffinity.getName(c.getAffinity()),
-                        ChampionFaction.getName(c.getFaction()),
-                        ChampionRole.getName(c.getRole()),
-                        ChampionRarity.getName(c.getRarity())
-                        /*c.getHealth(),
-                        c.getAttack(),
-                        c.getDefense(),
-                        c.getSpeed(),
-                        c.getResistance(),
-                        c.getAccuracy(),
-                        c.getCriticalChance(),
-                        c.getCriticalDamage()*/
-                ));
+        if (!c.getName().trim().isEmpty() && !c.getName().toLowerCase().contains("hero")) {
+            championValues.add(
+                    Arrays.asList(
+                            c.getName(),
+                            ChampionFaction.getName(c.getFaction()),
+                            ChampionRarity.getName(c.getRarity()),
+                            ChampionAffinity.getName(c.getAffinity()),
+                            ChampionRole.getName(c.getRole()),
+                            c.getHealth(),
+                            c.getAttack(),
+                            c.getDefense(),
+                            c.getSpeed(),
+                            c.getResistance(),
+                            c.getAccuracy(),
+                            c.getCriticalChance(),
+                            c.getCriticalDamage(),
+                            c.getCriticalHeal()
+                    ));
+        }
+
     }
 
+    /**
+     * Populate the sheet with the Champion values via the Sheets service
+     * @throws IOException when updating values in sheet (Sheet service)
+     */
     public void populateSheetChampion() throws IOException {
+        LOGGER.info("Populating champion data...");
+        
         String spreadsheetId = getSpreadsheetId();
-        LOGGER.info("Populating champion data for spreadsheet " + spreadsheetId + "...");
-
         Spreadsheet spreadsheet = sheetsService.getSpreadsheet(spreadsheetId);
-
         ValueRange body = new ValueRange().setValues(championValues);
         sheetsService.writeValuesSingleRange(spreadsheet, body, "Champions");
     }
 
-    private void populateSpreadsheet(Spreadsheet spreadsheet) {
-        LOGGER.info("Populating spreadsheet " + spreadsheet.getSpreadsheetId() + "...");
+    private void addChampionHeaderRow() {
+        LOGGER.info("Creating header row for champion sheet...");
 
-        Champion championTest1 = new Champion.Builder()
-                .setId(123)
-                .setName("Champion1")
-                .setFaction(1)
-                .build();
-
-        Champion championTest2 = new Champion.Builder()
-                .setId(456)
-                .setName("Champion2")
-                .setFaction(1)
-                .build();
-
-        Champion championTest3 = new Champion.Builder()
-                .setId(789)
-                .setName("Champion3")
-                .setFaction(1)
-                .build();
-
-        List<List<Object>> values = Arrays.asList(
-                Arrays.asList(championTest1.getId(), championTest1.getName(), championTest1.getFaction()),
-                Arrays.asList(championTest2.getId(), championTest2.getName(), championTest2.getFaction()),
-                Arrays.asList(championTest3.getId(), championTest3.getName(), championTest3.getFaction())
+        List<Object> headerRow = Arrays.asList(
+                "Name",
+                "Faction",
+                "Rarity",
+                "Affinity",
+                "Role",
+                "Health",
+                "Attack",
+                "Defense",
+                "Speed",
+                "Resistance",
+                "Accuracy",
+                "Critical Chance",
+                "Critical Damage",
+                "Critical Heal"
         );
 
-        ValueRange body = new ValueRange().setValues(values);
-        try {
-            sheetsService.writeValuesSingleRange(spreadsheet, body, "Champions");
-        } catch (IOException e) {
-            LOGGER.error("Error while populating sheet Champion", e);
-        }
-
-        //UpdateValuesResponse result = sheetsService.u
-
-
-
-        /*try {
-            // Rename default sheet title to Champions
-            sheetsService.renameSheet(spreadsheet, new SheetProperties()
-                    .setSheetId(spreadsheet.getSheets().get(0).getProperties().getSheetId())
-                    .setTitle(SHEET_CHAMPIONS_TITLE));
-
-            // Create sheet Skills
-            sheetsService.createSheet(spreadsheet, new SheetProperties().setTitle(SHEET_SKILLS_TITLE));
-
-
-        } catch (IOException e) {
-            LOGGER.error("Error while creating sheet " + SHEET_CHAMPIONS_TITLE, e);
-        }*/
-
+        championValues.add(headerRow);
     }
 
     private static String getCurrentDateFormatyyyyMMdd() {
