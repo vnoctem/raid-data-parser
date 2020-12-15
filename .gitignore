@@ -1,6 +1,7 @@
 ### RaidDataParser (START) ###
 oauth2.0_tokens
 /src/main/resources/spreadsheet_id.txt
+/src/main/resources/google-oauth-credentials.json
 ### RaidDataParser (END) ###
 
 ### Java (START) ###
