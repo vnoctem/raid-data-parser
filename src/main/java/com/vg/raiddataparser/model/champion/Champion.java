@@ -25,6 +25,7 @@ public class Champion {
     private int accuracy;
     private int criticalChance;
     private int criticalDamage;
+    private int criticalHeal;
     @OneToMany(mappedBy = "champion")
     private Set<Skill> skills;
 
@@ -44,6 +45,7 @@ public class Champion {
             int accuracy,
             int criticalChance,
             int criticalDamage,
+            int criticalHeal,
             Set<Skill> skills) {
         this.id = id;
         this.name = name;
@@ -59,6 +61,7 @@ public class Champion {
         this.accuracy = accuracy;
         this.criticalChance = criticalChance;
         this.criticalDamage = criticalDamage;
+        this.criticalHeal = criticalHeal;
         this.skills = skills;
     }
 
@@ -90,6 +93,8 @@ public class Champion {
 
     public int getCriticalDamage() { return criticalDamage; }
 
+    public int getCriticalHeal() { return criticalHeal; }
+
     public Set<Skill> getSkills() { return skills; }
 
     @Override
@@ -109,6 +114,7 @@ public class Champion {
                 ", accuracy=" + accuracy +
                 ", criticalChance=" + criticalChance +
                 ", criticalDamage=" + criticalDamage +
+                ", criticalHeal=" + criticalHeal +
                 ", skills=" + skills +
                 '}';
     }
@@ -129,6 +135,7 @@ public class Champion {
         private int accuracy;
         private int criticalChance;
         private int criticalDamage;
+        private int criticalHeal;
         private Set<Skill> skills;
 
         public Builder setId(int id) {
@@ -201,6 +208,11 @@ public class Champion {
             return this;
         }
 
+        public Builder setCriticalHeal(int criticalHeal) {
+            this.criticalHeal = criticalHeal;
+            return this;
+        }
+
         public Builder setSkills(Set<Skill> skills) {
             this.skills = skills;
             return this;
@@ -221,6 +233,7 @@ public class Champion {
                     accuracy,
                     criticalChance,
                     criticalDamage,
+                    criticalHeal,
                     skills);
         }
     }
