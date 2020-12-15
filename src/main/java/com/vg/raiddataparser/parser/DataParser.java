@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.vg.raiddataparser.googleservices.SpreadsheetRaidData;
 import com.vg.raiddataparser.model.champion.Champion;
 import com.vg.raiddataparser.model.Skill;
-import com.vg.raiddataparser.model.champion.ChampionAffinity;
+import com.vg.raiddataparser.model.champion.attributes.ChampionAffinity;
 import com.vg.raiddataparser.repository.ChampionRepository;
 import com.vg.raiddataparser.repository.SkillRepository;
 import org.slf4j.Logger;
@@ -98,6 +98,7 @@ public class DataParser {
                 long championAccuracy = nodeBaseStats.get("Accuracy").longValue();
                 long championCriticalChance = nodeBaseStats.get("CriticalChance").longValue();
                 long championCriticalDamage = nodeBaseStats.get("CriticalDamage").longValue();
+                long championCriticalHeal = nodeBaseStats.get("CriticalHeal").longValue();
 
                 Champion champion = new Champion.Builder()
                         .setId(championId)
@@ -106,25 +107,21 @@ public class DataParser {
                         .setRole(championRole)
                         .setFaction(championFaction)
                         .setRarity(championRarity)
-                        .setHealth(calculateHealth(championHealth))
-                        .setAttack(calculateAttack(championAttack))
-                        .setDefense(calculateDefense(championDefense))
-                        .setSpeed(calculateSpeed(championSpeed))
-                        .setResistance(calculateResistance(championResistance))
-                        .setAccuracy(calculateAccuracy(championAccuracy))
-                        .setCriticalChance(calculateCriticalChance(championCriticalChance))
-                        .setCriticalDamage(calculateCriticalDamage(championCriticalDamage))
+                        .setHealth(calculateScalableStatValue(championHealth) * 15)
+                        .setAttack(calculateScalableStatValue(championAttack))
+                        .setDefense(calculateScalableStatValue(championDefense))
+                        .setSpeed(calculateBaseStatValue(championSpeed))
+                        .setResistance(calculateBaseStatValue(championResistance))
+                        .setAccuracy(calculateBaseStatValue(championAccuracy))
+                        .setCriticalChance(calculateBaseStatValue(championCriticalChance))
+                        .setCriticalDamage(calculateBaseStatValue(championCriticalDamage))
+                        .setCriticalHeal(calculateBaseStatValue(championCriticalHeal))
                         .build();
 
                 // TODO: review (save champion in DB)
                 // Save Champion in database
                 // championRepository.save(champion);
-                try {
-                    spreadsheetRaidData.addChampionValues(champion);
-                } catch (IOException e) {
-                    LOGGER.error("Error while adding champion values for " + championName, e);
-                }
-
+                spreadsheetRaidData.addChampionValues(champion);
 
                 // Get SkillData node
                 JsonNode nodeSkillData = rootNode.get(JSON_SKILL_DATA_NODE);
@@ -152,7 +149,10 @@ public class DataParser {
                         }
                     }
                 } catch (IOException e) {
-                    LOGGER.error("Error while parsing champion's skills for champion (ID, name): " + championId + ", " + championName,
+                    LOGGER.error("Error while parsing champion's skills for champion (ID, name): "
+                            + championId
+                            + ", "
+                            + championName,
                             e);
                 }
             }
@@ -219,9 +219,7 @@ public class DataParser {
         return calculateBaseStatValue(rawCriticalChance);
     }
 
-    private int calculateCriticalDamage(long rawCriticalDamage) {
-        return calculateBaseStatValue(rawCriticalDamage);
-    }
+    private int calculateCriticalDamage(long rawCriticalDamage) { return calculateBaseStatValue(rawCriticalDamage); }
 
     /* For scalable stats (health, attack, defence)
      * Formula: BASE STAT * MULTIPLIER_1 * MULTIPLIER_2
@@ -241,7 +239,4 @@ public class DataParser {
         return (int) (stat / (Integer.MAX_VALUE * 2L - 1));
     }
 
-    private String valueOfAffinity(int affinityCode) {
-        return ChampionAffinity.getName(affinityCode);
-    }
 }
