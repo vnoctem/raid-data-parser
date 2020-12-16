@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.vg.raiddataparser.googleservices.SpreadsheetRaidData;
 import com.vg.raiddataparser.model.champion.Champion;
 import com.vg.raiddataparser.model.Skill;
-import com.vg.raiddataparser.model.champion.attributes.ChampionAffinity;
 import com.vg.raiddataparser.repository.ChampionRepository;
 import com.vg.raiddataparser.repository.SkillRepository;
 import org.slf4j.Logger;
@@ -142,6 +141,7 @@ public class DataParser {
                                 // TODO: review (save skill in DB)
                                 // Save Skill in database
                                 //skillRepository.save(createSkill(rootNode, nodeSkills.get(i), champion));
+                                spreadsheetRaidData.addSkillValues(createSkill(rootNode, nodeSkills.get(i), champion));
 
                                 // Remove node to have less nodes to loop through in the next iteration
                                 nodeSkills.remove(i);
@@ -157,11 +157,19 @@ public class DataParser {
                 }
             }
         }
+
         try {
             spreadsheetRaidData.populateSheetChampion();
         } catch (IOException e) {
             LOGGER.error("Error while populating sheet Champions", e);
         }
+
+        try {
+            spreadsheetRaidData.populateSheetSkill();
+        } catch (IOException e) {
+            LOGGER.error("Error while populating sheet Skills", e);
+        }
+
         LOGGER.info("Data parsing completed");
     }
 
@@ -179,15 +187,15 @@ public class DataParser {
         String skillDescriptionKey = nodeSkill.get("Description").get("Key").textValue();
         String skillDescription = nodeStaticDataLocalization.findPath(skillDescriptionKey).textValue();
 
-        return new Skill(
-                skillId,
-                skillRevision,
-                skillName,
-                skillDescription,
-                skillCooldown,
-                skillMultiplierFormula,
-                champion
-        );
+        return new Skill.Builder()
+                .setId(skillId)
+                .setRevision(skillRevision)
+                .setName(skillName)
+                .setDescription(skillDescription)
+                .setCooldown(skillCooldown)
+                .setMultiplierFormula(skillMultiplierFormula)
+                .setChampion(champion)
+                .build();
     }
 
     // For health only, multiple value returned of getRealScalableStatValue by 15
