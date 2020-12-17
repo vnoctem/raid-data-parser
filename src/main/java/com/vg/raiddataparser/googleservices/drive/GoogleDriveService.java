@@ -6,12 +6,14 @@ import com.google.api.services.drive.model.FileList;
 import com.vg.raiddataparser.googleservices.GoogleServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@Service
 public class GoogleDriveService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GoogleDriveService.class.getName());
@@ -32,7 +34,11 @@ public class GoogleDriveService {
      * @throws IOException
      */
     private List<File> getFiles() throws IOException {
-        FileList result = Objects.requireNonNull(SERVICE_DRIVE).files().list().setFields("files(id, name, trashed)").execute();
+        FileList result = Objects.requireNonNull(SERVICE_DRIVE)
+                .files()
+                .list()
+                .setFields("files(id, name, trashed)")
+                .execute();
         return new ArrayList<>(result.getFiles());
     }
 

@@ -106,7 +106,7 @@ public class DataParser {
                         .setRole(championRole)
                         .setFaction(championFaction)
                         .setRarity(championRarity)
-                        .setHealth(calculateScalableStatValue(championHealth) * 15)
+                        .setHealth(calculateScalableStatValue(championHealth) * 15) // for HP only, multiply by 15
                         .setAttack(calculateScalableStatValue(championAttack))
                         .setDefense(calculateScalableStatValue(championDefense))
                         .setSpeed(calculateBaseStatValue(championSpeed))
@@ -120,7 +120,7 @@ public class DataParser {
                 // TODO: review (save champion in DB)
                 // Save Champion in database
                 // championRepository.save(champion);
-                spreadsheetRaidData.addChampionValues(champion);
+                spreadsheetRaidData.addChampionToValues(champion);
 
                 // Get SkillData node
                 JsonNode nodeSkillData = rootNode.get(JSON_SKILL_DATA_NODE);
@@ -141,7 +141,7 @@ public class DataParser {
                                 // TODO: review (save skill in DB)
                                 // Save Skill in database
                                 //skillRepository.save(createSkill(rootNode, nodeSkills.get(i), champion));
-                                spreadsheetRaidData.addSkillValues(createSkill(rootNode, nodeSkills.get(i), champion));
+                                spreadsheetRaidData.addSkillToValues(createSkill(rootNode, nodeSkills.get(i), champion));
 
                                 // Remove node to have less nodes to loop through in the next iteration
                                 nodeSkills.remove(i);
@@ -159,13 +159,13 @@ public class DataParser {
         }
 
         try {
-            spreadsheetRaidData.populateSheetChampion();
+            spreadsheetRaidData.writeChampionDataToSheet();
         } catch (IOException e) {
             LOGGER.error("Error while populating sheet Champions", e);
         }
 
         try {
-            spreadsheetRaidData.populateSheetSkill();
+            spreadsheetRaidData.writeSkillDataToSheet();
         } catch (IOException e) {
             LOGGER.error("Error while populating sheet Skills", e);
         }
