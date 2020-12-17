@@ -164,11 +164,11 @@ public class DataParser {
             LOGGER.error("Error while populating sheet Champions", e);
         }
 
-        try {
+        /*try {
             spreadsheetRaidData.populateSheetSkill();
         } catch (IOException e) {
             LOGGER.error("Error while populating sheet Skills", e);
-        }
+        }*/
 
         LOGGER.info("Data parsing completed");
     }
