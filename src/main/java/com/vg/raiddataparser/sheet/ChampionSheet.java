@@ -29,7 +29,7 @@ public class ChampionSheet extends RaidSheet {
     }
 
     @Override
-    public RowData createHeaderRow() {
+    protected RowData createHeaderRow() {
         RowData headerRow = new RowData();
         List<CellData> cellDataValues = new ArrayList<>();
         List<String> stringValues = Arrays.asList(

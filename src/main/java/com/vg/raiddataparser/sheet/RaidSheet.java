@@ -23,10 +23,10 @@ public abstract class RaidSheet {
      *
      * @return RowData: header row for sheet
      */
-    public abstract RowData createHeaderRow();
+    protected abstract RowData createHeaderRow();
 
     /**
-     * Add object to List<List<Object>> values (values to be written to the sheet)
+     * Add object to list of values (values to be written to the sheet)
      *
      * @param o Object to be added
      */

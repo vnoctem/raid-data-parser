@@ -1,11 +1,14 @@
 package com.vg.raiddataparser.googleservices;
 
-import com.google.api.services.sheets.v4.model.*;
+import com.google.api.services.sheets.v4.model.Sheet;
+import com.google.api.services.sheets.v4.model.Spreadsheet;
+import com.google.api.services.sheets.v4.model.SpreadsheetProperties;
 import com.vg.raiddataparser.googleservices.drive.GoogleDriveService;
 import com.vg.raiddataparser.googleservices.sheets.GoogleSheetsService;
 import com.vg.raiddataparser.model.Skill;
 import com.vg.raiddataparser.model.champion.Champion;
 import com.vg.raiddataparser.sheet.ChampionSheet;
+import com.vg.raiddataparser.sheet.RaidSheet;
 import com.vg.raiddataparser.sheet.SkillSheet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +17,6 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -23,26 +25,23 @@ public class SpreadsheetRaidData {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpreadsheetRaidData.class.getName());
     private static final String SPREADSHEET_ID_FILE_NAME = "/spreadsheet_id.txt";
     private static final String RESOURCES_PATH = "src/main/resources";
-    private static final String SHEET_SKILLS_TITLE = "Skills";
 
     private final GoogleDriveService driveService = new GoogleDriveService();
     private final GoogleSheetsService sheetsService = new GoogleSheetsService();
-    private final List<List<Object>> skillValues = new ArrayList<>();
 
-    private ChampionSheet championSheet;
-    private SkillSheet skillSheet;
+    private RaidSheet championSheet;
+    private RaidSheet skillSheet;
 
     public SpreadsheetRaidData() {
         initializeRaidData();
     }
 
     private void initializeRaidData() {
-
         File file = new File(RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME);
 
         String title = "RSL - Champions' multipliers (last updated: " + getCurrentDateFormatyyyyMMdd() + ")";
         SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(title);
-
+        
         List<Sheet> sheets = new ArrayList<>();
         championSheet = new ChampionSheet();
         skillSheet = new SkillSheet();
@@ -75,19 +74,19 @@ public class SpreadsheetRaidData {
         }
     }
 
-    public void addChampionValues(Champion champion) {
+    public void addChampionToValues(Champion champion) {
         championSheet.addValueToList(champion);
     }
 
-    public void populateSheetChampion() throws IOException {
+    public void writeChampionDataToSheet() throws IOException {
         championSheet.writeValuesToSheet(getSpreadsheetId());
     }
 
-    public void addSkillValues(Skill skill) {
+    public void addSkillToValues(Skill skill) {
         skillSheet.addValueToList(skill);
     }
 
-    public void populateSheetSkill() throws IOException {
+    public void writeSkillDataToSheet() throws IOException {
         skillSheet.writeValuesToSheet(getSpreadsheetId());
     }
 
