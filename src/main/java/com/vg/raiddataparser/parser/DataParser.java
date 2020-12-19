@@ -19,7 +19,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class DataParser {
@@ -120,7 +123,7 @@ public class DataParser {
                 // TODO: review (save champion in DB)
                 // Save Champion in database
                 // championRepository.save(champion);
-                spreadsheetRaidData.addChampionToValues(champion);
+                //spreadsheetRaidData.addChampionToValues(champion);
 
                 // Get SkillData node
                 JsonNode nodeSkillData = rootNode.get(JSON_SKILL_DATA_NODE);
@@ -131,6 +134,7 @@ public class DataParser {
                     // (using findPath() because get() will cause an error if specified node doesn't exist
                     List<Integer> championSkillsIds = mapper.readValue(nodeChampion.findPath("SkillTypeIds").toString(),
                             new TypeReference<List<Integer>>() {});
+                    List<Skill> championSkills = new ArrayList<>();
 
                     for (int championSkillId : championSkillsIds) {
                         for (int i = 0; i < nodeSkills.size(); i++) {
@@ -141,18 +145,28 @@ public class DataParser {
                                 // TODO: review (save skill in DB)
                                 // Save Skill in database
                                 //skillRepository.save(createSkill(rootNode, nodeSkills.get(i), champion));
-                                spreadsheetRaidData.addSkillToValues(createSkill(rootNode, nodeSkills.get(i), champion));
+                                Skill skill = createSkill(rootNode, nodeSkills.get(i), champion);
+
+                                championSkills.add(skill);
+                                spreadsheetRaidData.addSkillToValues(skill);
 
                                 // Remove node to have less nodes to loop through in the next iteration
                                 nodeSkills.remove(i);
                             }
                         }
                     }
+
+                    // TODO: review (save champion in DB)
+                    champion.setSkills(championSkills);
+                    // championRepository.save(championBuilder.build());
+                    spreadsheetRaidData.addChampionToValues(champion);
+                    spreadsheetRaidData.addMultiplierToValues(champion);
+
                 } catch (IOException e) {
                     LOGGER.error("Error while parsing champion's skills for champion (ID, name): "
-                            + championId
-                            + ", "
-                            + championName,
+                                    + championId
+                                    + ", "
+                                    + championName,
                             e);
                 }
             }
@@ -168,6 +182,12 @@ public class DataParser {
             spreadsheetRaidData.writeSkillDataToSheet();
         } catch (IOException e) {
             LOGGER.error("Error while populating sheet Skills", e);
+        }
+
+        try {
+            spreadsheetRaidData.writeMultiplierDataToSheet();
+        } catch (IOException e) {
+            LOGGER.error("Error while populating sheet Multipliers", e);
         }
 
         LOGGER.info("Data parsing completed");
