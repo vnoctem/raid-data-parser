@@ -8,6 +8,7 @@ import com.vg.raiddataparser.googleservices.sheets.GoogleSheetsService;
 import com.vg.raiddataparser.model.Skill;
 import com.vg.raiddataparser.model.champion.Champion;
 import com.vg.raiddataparser.sheet.ChampionSheet;
+import com.vg.raiddataparser.sheet.MultiplierSheet;
 import com.vg.raiddataparser.sheet.RaidSheet;
 import com.vg.raiddataparser.sheet.SkillSheet;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -31,6 +33,7 @@ public class SpreadsheetRaidData {
 
     private RaidSheet championSheet;
     private RaidSheet skillSheet;
+    private RaidSheet multiplierSheet;
 
     public SpreadsheetRaidData() {
         initializeRaidData();
@@ -41,13 +44,16 @@ public class SpreadsheetRaidData {
 
         String title = "RSL - Champions' multipliers (last updated: " + getCurrentDateFormatyyyyMMdd() + ")";
         SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(title);
-        
-        List<Sheet> sheets = new ArrayList<>();
+
         championSheet = new ChampionSheet();
         skillSheet = new SkillSheet();
+        multiplierSheet = new MultiplierSheet();
 
-        sheets.add(championSheet.create());
-        sheets.add(skillSheet.create());
+        List<Sheet> sheets = new ArrayList<>(Arrays.asList(
+                championSheet.create(),
+                skillSheet.create(),
+                multiplierSheet.create()
+        ));
 
         try {
             if (file.exists()) { // spreadsheet_id.txt exists
@@ -88,6 +94,14 @@ public class SpreadsheetRaidData {
 
     public void writeSkillDataToSheet() throws IOException {
         skillSheet.writeValuesToSheet(getSpreadsheetId());
+    }
+
+    public void addMultiplierToValues(Champion champion) {
+        multiplierSheet.addValueToList(champion);
+    }
+
+    public void writeMultiplierDataToSheet() throws IOException {
+        multiplierSheet.writeValuesToSheet(getSpreadsheetId());
     }
 
     private static String getCurrentDateFormatyyyyMMdd() {
