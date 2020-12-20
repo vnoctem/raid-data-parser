@@ -1,14 +1,16 @@
 package com.vg.raiddataparser.googleservices;
 
-import com.google.api.services.sheets.v4.model.*;
+import com.google.api.services.sheets.v4.model.Sheet;
+import com.google.api.services.sheets.v4.model.Spreadsheet;
+import com.google.api.services.sheets.v4.model.SpreadsheetProperties;
 import com.vg.raiddataparser.googleservices.drive.GoogleDriveService;
 import com.vg.raiddataparser.googleservices.sheets.GoogleSheetsService;
 import com.vg.raiddataparser.model.Skill;
-import com.vg.raiddataparser.model.champion.*;
-import com.vg.raiddataparser.model.champion.attributes.ChampionAffinity;
-import com.vg.raiddataparser.model.champion.attributes.ChampionFaction;
-import com.vg.raiddataparser.model.champion.attributes.ChampionRarity;
-import com.vg.raiddataparser.model.champion.attributes.ChampionRole;
+import com.vg.raiddataparser.model.champion.Champion;
+import com.vg.raiddataparser.sheet.ChampionSheet;
+import com.vg.raiddataparser.sheet.MultiplierSheet;
+import com.vg.raiddataparser.sheet.RaidSheet;
+import com.vg.raiddataparser.sheet.SkillSheet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,17 +25,15 @@ import java.util.Locale;
 public class SpreadsheetRaidData {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpreadsheetRaidData.class.getName());
+    private static final String SPREADSHEET_ID_FILE_NAME = "/spreadsheet_id.txt";
+    private static final String RESOURCES_PATH = "src/main/resources";
 
     private final GoogleDriveService driveService = new GoogleDriveService();
     private final GoogleSheetsService sheetsService = new GoogleSheetsService();
 
-    private final List<List<Object>> championValues = new ArrayList<>();
-    private final List<List<Object>> skillValues = new ArrayList<>();
-
-    private static final String SPREADSHEET_ID_FILE_NAME = "/spreadsheet_id.txt";
-    private static final String RESOURCES_PATH = "src/main/resources";
-    private static final String SHEET_CHAMPIONS_TITLE = "Champions";
-    private static final String SHEET_SKILLS_TITLE = "Skills";
+    private RaidSheet multiplierSheet;
+    private RaidSheet championSheet;
+    private RaidSheet skillSheet;
 
 
     public SpreadsheetRaidData() {
@@ -41,27 +41,21 @@ public class SpreadsheetRaidData {
     }
 
     private void initializeRaidData() {
-
         File file = new File(RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME);
 
         String title = "RSL - Champions' multipliers (last updated: " + getCurrentDateFormatyyyyMMdd() + ")";
         SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(title);
 
-        List<Sheet> sheets = new ArrayList<>();
+        multiplierSheet = new MultiplierSheet();
+        championSheet = new ChampionSheet();
+        skillSheet = new SkillSheet();
 
-        SheetProperties championSheetProperties = new SheetProperties();
-        championSheetProperties.setTitle(SHEET_CHAMPIONS_TITLE)
-                .setGridProperties(new GridProperties().setFrozenRowCount(1));
 
-        SheetProperties skillSheetProperties = new SheetProperties();
-        skillSheetProperties.setTitle(SHEET_SKILLS_TITLE)
-                .setGridProperties(new GridProperties().setFrozenRowCount(1));
-
-        Sheet championSheet = new Sheet().setProperties(championSheetProperties);
-        Sheet skillSheet = new Sheet().setProperties(skillSheetProperties);
-
-        sheets.add(championSheet);
-        sheets.add(skillSheet);
+        List<Sheet> sheets = new ArrayList<>(Arrays.asList(
+                multiplierSheet.create(),
+                championSheet.create(),
+                skillSheet.create()
+        ));
 
         try {
             if (file.exists()) { // spreadsheet_id.txt exists
@@ -75,8 +69,6 @@ public class SpreadsheetRaidData {
                     LOGGER.info("Spreadsheet does not exist");
                     Spreadsheet result = sheetsService.createSpreadsheet(properties, sheets);
                     writeSpreadsheetId(file, result.getSpreadsheetId());
-                    addChampionHeaderRow();
-                    addSkillHeaderRow();
                 }
             } else { // spreadsheet_id.txt doesn't exist
                 LOGGER.info("Creating new local file " + file.getAbsolutePath());
@@ -90,122 +82,28 @@ public class SpreadsheetRaidData {
         }
     }
 
-    /**
-     * Add the Champion values to the List<List<Object>> championValues
-     *
-     * @param c Champion to be added
-     */
-    public void addChampionValues(Champion c) {
-
-        // Add champion only if:
-        // - name is not empty
-        // - name does not contains "hero"
-        if (!c.getName().trim().isEmpty() && !c.getName().toLowerCase().contains("hero")) {
-            LOGGER.info("Creating row for champion: " + c.getName() + "...");
-
-            championValues.add(Arrays.asList(
-                    c.getName(),
-                    ChampionFaction.getName(c.getFaction()),
-                    ChampionRarity.getName(c.getRarity()),
-                    ChampionAffinity.getName(c.getAffinity()),
-                    ChampionRole.getName(c.getRole()),
-                    c.getHealth(),
-                    c.getAttack(),
-                    c.getDefense(),
-                    c.getSpeed(),
-                    c.getResistance(),
-                    c.getAccuracy(),
-                    c.getCriticalChance(),
-                    c.getCriticalDamage(),
-                    c.getCriticalHeal()
-            ));
-        }
+    public void addMultiplierToValues(Champion champion) {
+        multiplierSheet.addValueToList(champion);
     }
 
-    /**
-     * Populate the sheet with the Champion values via the Sheets service
-     *
-     * @throws IOException when updating values in sheet (Sheet service)
-     */
-    public void populateSheetChampion() throws IOException {
-        LOGGER.info("Populating champion data...");
-
-        String spreadsheetId = getSpreadsheetId();
-        Spreadsheet spreadsheet = sheetsService.getSpreadsheet(spreadsheetId);
-        ValueRange body = new ValueRange().setValues(championValues);
-        sheetsService.writeValuesSingleRange(spreadsheet, body, SHEET_CHAMPIONS_TITLE);
+    public void writeMultiplierDataToSheet() throws IOException {
+        multiplierSheet.writeValuesToSheet(getSpreadsheetId());
     }
 
-    private void addChampionHeaderRow() {
-        LOGGER.info("Creating header row for champion sheet...");
-
-        List<Object> headerRow = Arrays.asList(
-                "Name",
-                "Faction",
-                "Rarity",
-                "Affinity",
-                "Role",
-                "Health",
-                "Attack",
-                "Defense",
-                "Speed",
-                "Resistance",
-                "Accuracy",
-                "Critical Chance",
-                "Critical Damage",
-                "Critical Heal"
-        );
-
-        championValues.add(headerRow);
+    public void addChampionToValues(Champion champion) {
+        championSheet.addValueToList(champion);
     }
 
-    /**
-     * Add the Skill values to the List<List<Object>> skillValues
-     *
-     * @param s Skill to be added
-     */
-    public void addSkillValues(Skill s) {
-
-        // Add skill only if:
-        // - name is not empty
-        // - name does not contain "skill" and "name"
-        // - description is not empty
-        if (!s.getName().trim().isEmpty()
-                && !(s.getName().toLowerCase().contains("skill") && s.getName().toLowerCase().contains("name"))
-                && !s.getDescription().trim().isEmpty()) {
-            LOGGER.info("Creating row for skill: " + s.getName() + "...");
-
-            skillValues.add(Arrays.asList(
-                    s.getName(),
-                    s.getDescription(),
-                    s.getCooldown(),
-                    s.getMultiplierFormula() == null ? "" : s.getMultiplierFormula(),
-                    s.getChampion().getName()
-            ));
-        }
+    public void writeChampionDataToSheet() throws IOException {
+        championSheet.writeValuesToSheet(getSpreadsheetId());
     }
 
-    public void populateSheetSkill() throws IOException {
-        LOGGER.info("Populating skill data...");
-
-        String spreadsheetId = getSpreadsheetId();
-        Spreadsheet spreadsheet = sheetsService.getSpreadsheet(spreadsheetId);
-        ValueRange body = new ValueRange().setValues(skillValues);
-        sheetsService.writeValuesSingleRange(spreadsheet, body, SHEET_SKILLS_TITLE);
+    public void addSkillToValues(Skill skill) {
+        skillSheet.addValueToList(skill);
     }
 
-    private void addSkillHeaderRow() {
-        LOGGER.info("Creating header row for skill sheet...");
-
-        List<Object> headerRow = Arrays.asList(
-                "Name",
-                "Description",
-                "Cooldown",
-                "Multiplier",
-                "Champion"
-        );
-
-        skillValues.add(headerRow);
+    public void writeSkillDataToSheet() throws IOException {
+        skillSheet.writeValuesToSheet(getSpreadsheetId());
     }
 
     private static String getCurrentDateFormatyyyyMMdd() {

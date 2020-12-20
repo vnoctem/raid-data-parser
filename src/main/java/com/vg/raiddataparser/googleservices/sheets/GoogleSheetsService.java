@@ -32,10 +32,18 @@ public class GoogleSheetsService {
         return Objects.requireNonNull(SERVICE_SHEETS).spreadsheets().create(spreadsheet).execute();
     }
 
-    public UpdateValuesResponse writeValuesSingleRange(Spreadsheet spreadsheet, ValueRange body, String range) throws IOException {
+    public UpdateValuesResponse updateValues(Spreadsheet spreadsheet, String range, ValueRange body) throws IOException {
         return Objects.requireNonNull(SERVICE_SHEETS).spreadsheets()
                 .values()
                 .update(spreadsheet.getSpreadsheetId(), range, body)
+                .setValueInputOption("RAW")
+                .execute();
+    }
+
+    public AppendValuesResponse appendValues(Spreadsheet spreadsheet, String range, ValueRange body) throws IOException {
+        return Objects.requireNonNull(SERVICE_SHEETS).spreadsheets()
+                .values()
+                .append(spreadsheet.getSpreadsheetId(), range, body)
                 .setValueInputOption("RAW")
                 .execute();
     }
