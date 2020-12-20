@@ -5,6 +5,7 @@ import com.vg.raiddataparser.model.Skill;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -27,7 +28,7 @@ public class Champion {
     private int criticalDamage;
     private int criticalHeal;
     @OneToMany(mappedBy = "champion")
-    private Set<Skill> skills;
+    private List<Skill> skills;
 
     public Champion() {}
 
@@ -46,7 +47,7 @@ public class Champion {
             int criticalChance,
             int criticalDamage,
             int criticalHeal,
-            Set<Skill> skills) {
+            List<Skill> skills) {
         this.id = id;
         this.name = name;
         this.affinity = affinity;
@@ -95,7 +96,11 @@ public class Champion {
 
     public int getCriticalHeal() { return criticalHeal; }
 
-    public Set<Skill> getSkills() { return skills; }
+    public List<Skill> getSkills() { return skills; }
+
+    public void setSkills(List<Skill> skills) {
+        this.skills = skills;
+    }
 
     @Override
     public String toString() {
@@ -136,7 +141,7 @@ public class Champion {
         private int criticalChance;
         private int criticalDamage;
         private int criticalHeal;
-        private Set<Skill> skills;
+        private List<Skill> skills;
 
         public Builder setId(int id) {
             this.id = id;
@@ -213,7 +218,7 @@ public class Champion {
             return this;
         }
 
-        public Builder setSkills(Set<Skill> skills) {
+        public Builder setSkills(List<Skill> skills) {
             this.skills = skills;
             return this;
         }
