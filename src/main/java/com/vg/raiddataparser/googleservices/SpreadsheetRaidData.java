@@ -31,9 +31,10 @@ public class SpreadsheetRaidData {
     private final GoogleDriveService driveService = new GoogleDriveService();
     private final GoogleSheetsService sheetsService = new GoogleSheetsService();
 
+    private RaidSheet multiplierSheet;
     private RaidSheet championSheet;
     private RaidSheet skillSheet;
-    private RaidSheet multiplierSheet;
+
 
     public SpreadsheetRaidData() {
         initializeRaidData();
@@ -45,14 +46,15 @@ public class SpreadsheetRaidData {
         String title = "RSL - Champions' multipliers (last updated: " + getCurrentDateFormatyyyyMMdd() + ")";
         SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(title);
 
+        multiplierSheet = new MultiplierSheet();
         championSheet = new ChampionSheet();
         skillSheet = new SkillSheet();
-        multiplierSheet = new MultiplierSheet();
+
 
         List<Sheet> sheets = new ArrayList<>(Arrays.asList(
+                multiplierSheet.create(),
                 championSheet.create(),
-                skillSheet.create(),
-                multiplierSheet.create()
+                skillSheet.create()
         ));
 
         try {
@@ -80,6 +82,14 @@ public class SpreadsheetRaidData {
         }
     }
 
+    public void addMultiplierToValues(Champion champion) {
+        multiplierSheet.addValueToList(champion);
+    }
+
+    public void writeMultiplierDataToSheet() throws IOException {
+        multiplierSheet.writeValuesToSheet(getSpreadsheetId());
+    }
+
     public void addChampionToValues(Champion champion) {
         championSheet.addValueToList(champion);
     }
@@ -94,14 +104,6 @@ public class SpreadsheetRaidData {
 
     public void writeSkillDataToSheet() throws IOException {
         skillSheet.writeValuesToSheet(getSpreadsheetId());
-    }
-
-    public void addMultiplierToValues(Champion champion) {
-        multiplierSheet.addValueToList(champion);
-    }
-
-    public void writeMultiplierDataToSheet() throws IOException {
-        multiplierSheet.writeValuesToSheet(getSpreadsheetId());
     }
 
     private static String getCurrentDateFormatyyyyMMdd() {
