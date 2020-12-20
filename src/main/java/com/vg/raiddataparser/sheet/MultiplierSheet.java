@@ -45,19 +45,23 @@ public class MultiplierSheet extends RaidSheet {
 
     @Override
     public void addValueToList(Object o) {
-
-        //FIXME : Do not add hero and skills that have no names or are empty
         Champion c = (Champion) o;
+        List<Object> rowValues = null;
 
-        List<Object> rowValues =  new ArrayList<>();
-        rowValues.add(c.getName());
+        // Add multipliers only if:
+        // - champion name is not empty
+        // - champion name does not contains "hero"
+        if (!c.getName().trim().isEmpty() && !c.getName().toLowerCase().contains("hero")) {
+            LOGGER.info("Adding multipliers");
 
-        for (Skill s : c.getSkills()) {
-            rowValues.add(s.getName() == null ? "" : s.getName());
-            rowValues.add(s.getMultiplierFormula() == null ? "" : s.getMultiplierFormula());
+            rowValues = new ArrayList<>();
+            rowValues.add(c.getName());
+
+            for (Skill s : c.getSkills()) {
+                rowValues.add(s.getName() == null ? "" : s.getName());
+                rowValues.add(s.getMultiplierFormula() == null ? "" : s.getMultiplierFormula());
+            }
         }
-
-        LOGGER.info("Adding multipliers");
 
         values.add(rowValues);
     }

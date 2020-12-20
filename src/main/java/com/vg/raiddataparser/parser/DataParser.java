@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.vg.raiddataparser.googleservices.SpreadsheetRaidData;
-import com.vg.raiddataparser.model.champion.Champion;
 import com.vg.raiddataparser.model.Skill;
+import com.vg.raiddataparser.model.champion.Champion;
 import com.vg.raiddataparser.repository.ChampionRepository;
 import com.vg.raiddataparser.repository.SkillRepository;
 import org.slf4j.Logger;
@@ -20,9 +20,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Component
 public class DataParser {
@@ -122,7 +120,7 @@ public class DataParser {
 
                 // TODO: review (save champion in DB)
                 // Save Champion in database
-                // championRepository.save(champion);
+                //championRepository.save(champion);
                 //spreadsheetRaidData.addChampionToValues(champion);
 
                 // Get SkillData node
