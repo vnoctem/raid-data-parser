@@ -119,9 +119,7 @@ public class DataParser {
                         .build();
 
                 // TODO: review (save champion in DB)
-                // Save Champion in database
                 //championRepository.save(champion);
-                //spreadsheetRaidData.addChampionToValues(champion);
 
                 // Get SkillData node
                 JsonNode nodeSkillData = rootNode.get(JSON_SKILL_DATA_NODE);
@@ -154,9 +152,7 @@ public class DataParser {
                         }
                     }
 
-                    // TODO: review (save champion in DB)
                     champion.setSkills(championSkills);
-                    // championRepository.save(championBuilder.build());
                     spreadsheetRaidData.addChampionToValues(champion);
                     spreadsheetRaidData.addMultiplierToValues(champion);
 
@@ -196,6 +192,8 @@ public class DataParser {
         int skillId = nodeSkill.get("Id").intValue();
         int skillRevision = nodeSkill.get("Revision").intValue();
         int skillCooldown = nodeSkill.get("Cooldown").intValue();
+        int skillVisibility = nodeSkill.get("Visibility").intValue();
+        int skillGroup = nodeSkill.get("Group").intValue();
         String skillMultiplierFormula = nodeSkill.findPath("MultiplierFormula").textValue();
 
         // Get the StaticDataLocalization node for the skillName and skillDescription values
@@ -212,6 +210,8 @@ public class DataParser {
                 .setDescription(skillDescription)
                 .setCooldown(skillCooldown)
                 .setMultiplierFormula(skillMultiplierFormula)
+                .setVisibility(skillVisibility)
+                .setGroup(skillGroup)
                 .setChampion(champion)
                 .build();
     }

@@ -35,6 +35,8 @@ public class SpreadsheetRaidData {
     private RaidSheet championSheet;
     private RaidSheet skillSheet;
 
+    // TODO: review; maybe for dev purpose only
+    //private boolean update = false;
 
     public SpreadsheetRaidData() {
         initializeRaidData();
@@ -64,6 +66,8 @@ public class SpreadsheetRaidData {
                 if (driveService.fileExists(spreadsheetId)) { // spreadsheet with corresponding ID exists on Drive
                     LOGGER.info("Spreadsheet already exists on Drive");
                     //TODO: Update Raid data
+                    update = true;
+
                     LOGGER.info("Updating Raid data (TO DO)");
                 } else { // spreadsheet with corresponding ID doesn't exist on Drive
                     LOGGER.info("Spreadsheet does not exist");
