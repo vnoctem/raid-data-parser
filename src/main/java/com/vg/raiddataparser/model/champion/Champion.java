@@ -6,29 +6,44 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 public class Champion {
 
     @Id
     private int id;
+
     private String name;
+
     private int affinity;
+
     private int role;
+
     private int faction;
+
     private int rarity;
+
     private int health;
+
     private int attack;
+
     private int defense;
+
     private int speed;
+
     private int resistance;
+
     private int accuracy;
+
     private int criticalChance;
+
     private int criticalDamage;
+
+
     private int criticalHeal;
     @OneToMany(mappedBy = "champion")
     private List<Skill> skills;
+
 
     public Champion() {}
 

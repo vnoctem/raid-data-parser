@@ -64,7 +64,6 @@ public class ChampionSheet extends RaidSheet {
         // - name is not empty
         // - name does not contains "hero"
         if (!c.getName().trim().isEmpty() && !c.getName().toLowerCase().contains("hero")) {
-
             LOGGER.info("Adding champion to list: " + c.getName());
 
             values.add(Arrays.asList(

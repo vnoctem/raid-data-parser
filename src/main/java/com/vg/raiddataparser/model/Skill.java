@@ -9,15 +9,27 @@ public class Skill {
 
     @Id
     private int id;
+
     @ManyToOne
     @JoinColumn(name = "champion_id")
     private Champion champion;
+
     private int revision;
+
     private String name;
+
     @Column(length = 1000000)
     private String description;
+
     private int cooldown;
+
     private String multiplierFormula;
+
+    private int visibility;
+
+    @Column(name = "s_group")
+    private int group;
+
 
     public Skill() {}
 
@@ -27,6 +39,8 @@ public class Skill {
             String description,
             int cooldown,
             String multiplierFormula,
+            int visibility,
+            int group,
             Champion champion) {
         this.id = id;
         this.revision = revision;
@@ -34,12 +48,12 @@ public class Skill {
         this.description = description;
         this.cooldown = cooldown;
         this.multiplierFormula = multiplierFormula;
+        this.visibility = visibility;
+        this.group = group;
         this.champion = champion;
     }
 
     public int getId() { return id; }
-
-    public Champion getChampion() { return champion; }
 
     public int getRevision() { return revision; }
 
@@ -51,6 +65,12 @@ public class Skill {
 
     public String getMultiplierFormula() { return multiplierFormula; }
 
+    public int getVisibility() { return visibility; }
+
+    public int getGroup() { return group; }
+
+    public Champion getChampion() { return champion; }
+
     @Override
     public String toString() {
         return "Skill{" +
@@ -60,6 +80,8 @@ public class Skill {
                 ", description='" + description + '\'' +
                 ", cooldown=" + cooldown +
                 ", multiplierFormula='" + multiplierFormula + '\'' +
+                ", visibility=" + visibility +
+                ", group=" + group +
                 '}';
     }
 
@@ -71,6 +93,8 @@ public class Skill {
         private String description;
         private int cooldown;
         private String multiplierFormula;
+        private int visibility;
+        private int group;
         private Champion champion;
 
         public Builder setId(int id) {
@@ -103,13 +127,23 @@ public class Skill {
             return this;
         }
 
+        public Builder setVisibility(int visibility) {
+            this.visibility = visibility;
+            return this;
+        }
+
+        public Builder setGroup(int group) {
+            this.group = group;
+            return this;
+        }
+
         public Builder setChampion(Champion champion) {
             this.champion = champion;
             return this;
         }
 
         public Skill build() {
-            return new Skill(id, revision, name, description, cooldown, multiplierFormula, champion);
+            return new Skill(id, revision, name, description, cooldown, multiplierFormula, visibility, group, champion);
         }
     }
 }
