@@ -58,8 +58,10 @@ public class MultiplierSheet extends RaidSheet {
             rowValues.add(c.getName());
 
             for (Skill s : c.getSkills()) {
-                rowValues.add(s.getName() == null ? "" : s.getName());
-                rowValues.add(s.getMultiplierFormula() == null ? "" : s.getMultiplierFormula());
+                if (s.getVisibility() == 0) {
+                    rowValues.add(s.getName() == null ? "" : s.getName());
+                    rowValues.add(s.getMultiplierFormula() == null ? "[None]" : s.getMultiplierFormula());
+                }
             }
         }
 
