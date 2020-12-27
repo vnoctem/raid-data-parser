@@ -33,7 +33,9 @@ public class MultiplierSheet extends RaidSheet {
                 "A2 Name",
                 "A2 Multiplier",
                 "A3 Name",
-                "A3 Multiplier"
+                "A3 Multiplier",
+                "A4 Name",
+                "A4 Multiplier"
         );
 
         for (String s : stringValues) {

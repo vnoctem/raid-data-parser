@@ -167,21 +167,17 @@ public class DataParser {
         }
 
         try {
-            spreadsheetRaidData.writeChampionDataToSheet();
+            if (spreadsheetRaidData.isUpdating()) {
+                spreadsheetRaidData.updateMultiplierData();
+                spreadsheetRaidData.updateChampionData();
+                spreadsheetRaidData.updateSkillData();
+            } else {
+                spreadsheetRaidData.writeMultiplierDataToSheet();
+                spreadsheetRaidData.writeChampionDataToSheet();
+                spreadsheetRaidData.writeSkillDataToSheet();
+            }
         } catch (IOException e) {
-            LOGGER.error("Error while populating sheet Champions", e);
-        }
-
-        try {
-            spreadsheetRaidData.writeSkillDataToSheet();
-        } catch (IOException e) {
-            LOGGER.error("Error while populating sheet Skills", e);
-        }
-
-        try {
-            spreadsheetRaidData.writeMultiplierDataToSheet();
-        } catch (IOException e) {
-            LOGGER.error("Error while populating sheet Multipliers", e);
+            LOGGER.error(e.getMessage());
         }
 
         LOGGER.info("Data parsing completed");
@@ -215,37 +211,6 @@ public class DataParser {
                 .setChampion(champion)
                 .build();
     }
-
-    // For health only, multiple value returned of getRealScalableStatValue by 15
-    private int calculateHealth(long rawHealth) {
-        return calculateScalableStatValue(rawHealth) * 15;
-    }
-
-    private int calculateAttack(long rawAttack) {
-        return calculateScalableStatValue(rawAttack);
-    }
-
-    private int calculateDefense(long rawDefense) {
-        return calculateScalableStatValue(rawDefense);
-    }
-
-    private int calculateSpeed(long rawSpeed) {
-        return calculateBaseStatValue(rawSpeed);
-    }
-
-    private int calculateResistance(long rawResistance) {
-        return calculateBaseStatValue(rawResistance);
-    }
-
-    private int calculateAccuracy(long rawAccuracy) {
-        return calculateBaseStatValue(rawAccuracy);
-    }
-
-    private int calculateCriticalChance(long rawCriticalChance) {
-        return calculateBaseStatValue(rawCriticalChance);
-    }
-
-    private int calculateCriticalDamage(long rawCriticalDamage) { return calculateBaseStatValue(rawCriticalDamage); }
 
     /* For scalable stats (health, attack, defence)
      * Formula: BASE STAT * MULTIPLIER_1 * MULTIPLIER_2
