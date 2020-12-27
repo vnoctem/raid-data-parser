@@ -58,10 +58,31 @@ public abstract class RaidSheet {
      * @throws IOException when writing values in sheet (Sheet service)
      */
     public void writeValuesToSheet(String spreadsheetId) throws IOException {
-        Spreadsheet spreadsheet = sheetsService.getSpreadsheet(spreadsheetId);
-        ValueRange body = new ValueRange().setValues(values);
+        try {
+            Spreadsheet spreadsheet = sheetsService.getSpreadsheet(spreadsheetId);
+            ValueRange body = new ValueRange().setValues(values);
 
-        sheetsService.appendValues(spreadsheet, title, body);
+            sheetsService.appendValues(spreadsheet, title, body);
+        } catch (IOException e) {
+            throw new IOException("Error while writing to sheet " + title);
+        }
     }
 
+    /**
+     * Update values
+     *
+     * @param spreadsheetId Spreadsheet Id
+     * @throws IOException when updating values in sheet (Sheets service)
+     */
+    public void updateValues(String spreadsheetId) throws IOException {
+        try {
+            Spreadsheet spreadsheet = sheetsService.getSpreadsheet(spreadsheetId);
+            ValueRange body = new ValueRange().setValues(values);
+            String range = title + "!A2:Z";
+
+            sheetsService.updateValues(spreadsheetId, range, body);
+        } catch (IOException e) {
+            throw new IOException("Error while updating sheet " + title);
+        }
+    }
 }

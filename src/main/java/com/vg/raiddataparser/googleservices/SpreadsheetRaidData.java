@@ -35,8 +35,7 @@ public class SpreadsheetRaidData {
     private RaidSheet championSheet;
     private RaidSheet skillSheet;
 
-    // TODO: review; maybe for dev purpose only
-    //private boolean update = false;
+    private boolean updating = false;
 
     public SpreadsheetRaidData() {
         initializeRaidData();
@@ -44,14 +43,11 @@ public class SpreadsheetRaidData {
 
     private void initializeRaidData() {
         File file = new File(RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME);
-
-        String title = "RSL - Champions' multipliers (last updated: " + getCurrentDateFormatyyyyMMdd() + ")";
-        SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(title);
+        SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(getUpdatedSpreadsheetTitle());
 
         multiplierSheet = new MultiplierSheet();
         championSheet = new ChampionSheet();
         skillSheet = new SkillSheet();
-
 
         List<Sheet> sheets = new ArrayList<>(Arrays.asList(
                 multiplierSheet.create(),
@@ -65,10 +61,8 @@ public class SpreadsheetRaidData {
 
                 if (driveService.fileExists(spreadsheetId)) { // spreadsheet with corresponding ID exists on Drive
                     LOGGER.info("Spreadsheet already exists on Drive");
-                    //TODO: Update Raid data
-                    update = true;
-
-                    LOGGER.info("Updating Raid data (TO DO)");
+                    updating = true;
+                    updateSpreadsheet(spreadsheetId);
                 } else { // spreadsheet with corresponding ID doesn't exist on Drive
                     LOGGER.info("Spreadsheet does not exist");
                     Spreadsheet result = sheetsService.createSpreadsheet(properties, sheets);
@@ -86,12 +80,37 @@ public class SpreadsheetRaidData {
         }
     }
 
+    public boolean isUpdating() {
+        return updating;
+    }
+
+    private void updateSpreadsheet(String spreadsheetId) throws IOException {
+        LOGGER.info("Updating spreadsheet");
+        try {
+            // Rename spreadsheet
+            sheetsService.renameSpreadsheet(spreadsheetId, getUpdatedSpreadsheetTitle());
+
+            // Update sheets data
+            multiplierSheet.updateValues(spreadsheetId);
+            championSheet.updateValues(spreadsheetId);
+            skillSheet.updateValues(spreadsheetId);
+        } catch (IOException e) {
+            throw new IOException("Error occurred when updating spreadsheet title");
+        }
+
+
+    }
+
     public void addMultiplierToValues(Champion champion) {
         multiplierSheet.addValueToList(champion);
     }
 
     public void writeMultiplierDataToSheet() throws IOException {
         multiplierSheet.writeValuesToSheet(getSpreadsheetId());
+    }
+
+    public void updateMultiplierData() throws IOException {
+        multiplierSheet.updateValues(getSpreadsheetId());
     }
 
     public void addChampionToValues(Champion champion) {
@@ -102,6 +121,10 @@ public class SpreadsheetRaidData {
         championSheet.writeValuesToSheet(getSpreadsheetId());
     }
 
+    public void updateChampionData() throws IOException {
+        championSheet.updateValues(getSpreadsheetId());
+    }
+
     public void addSkillToValues(Skill skill) {
         skillSheet.addValueToList(skill);
     }
@@ -110,7 +133,15 @@ public class SpreadsheetRaidData {
         skillSheet.writeValuesToSheet(getSpreadsheetId());
     }
 
-    private static String getCurrentDateFormatyyyyMMdd() {
+    public void updateSkillData() throws IOException {
+        skillSheet.updateValues(getSpreadsheetId());
+    }
+
+    private String getUpdatedSpreadsheetTitle() {
+        return "RSL - Multipliers (last updated: " + getCurrentDateFormatyyyyMMdd() + ")";
+    }
+
+    private String getCurrentDateFormatyyyyMMdd() {
         LocalDateTime date = LocalDateTime.now();
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH);
         return dateFormatter.format(date);
@@ -126,6 +157,33 @@ public class SpreadsheetRaidData {
                     + "\". Operation will be aborted.");
         }
     }
+
+    /*private void writeSheetIds(File f, Spreadsheet spreadsheet) throws IOException {
+        LOGGER.info("Writing sheets' IDs to file");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(f, false))) {
+            for (Sheet s : spreadsheet.getSheets()) {
+                writer.write(s.getProperties().getSheetId());
+            }
+        } catch (IOException e) {
+            throw new IOException("Error occurred when writing sheet ID to file \""
+                    + RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME
+                    + "\". Operation will be aborted.");
+        }
+    }*/
+
+    /*private String getSheetId(File f, String sheetName) throws IOException {
+        LOGGER.info("Retrieving spreadsheet ID from file");
+        try (BufferedReader reader = new BufferedReader(new FileReader(f))) {
+            switch (sheetName) {
+                case "Multipiers"
+            }
+            return reader.readLine();
+        } catch (IOException e) {
+            throw new IOException("Error occurred when retrieving spreadsheet ID from file \""
+                    + RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME
+                    + "\". Operation will be aborted.");
+        }
+    }*/
 
     private String getSpreadsheetId() throws IOException {
         File file = new File(RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME);

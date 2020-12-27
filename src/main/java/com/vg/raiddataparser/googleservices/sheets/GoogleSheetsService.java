@@ -32,15 +32,19 @@ public class GoogleSheetsService {
         return Objects.requireNonNull(SERVICE_SHEETS).spreadsheets().create(spreadsheet).execute();
     }
 
-    public UpdateValuesResponse updateValues(Spreadsheet spreadsheet, String range, ValueRange body) throws IOException {
+    public UpdateValuesResponse updateValues(String spreadsheetId,
+            String range,
+            ValueRange body) throws IOException {
         return Objects.requireNonNull(SERVICE_SHEETS).spreadsheets()
                 .values()
-                .update(spreadsheet.getSpreadsheetId(), range, body)
+                .update(spreadsheetId, range, body)
                 .setValueInputOption("RAW")
                 .execute();
     }
 
-    public AppendValuesResponse appendValues(Spreadsheet spreadsheet, String range, ValueRange body) throws IOException {
+    public AppendValuesResponse appendValues(Spreadsheet spreadsheet,
+            String range,
+            ValueRange body) throws IOException {
         return Objects.requireNonNull(SERVICE_SHEETS).spreadsheets()
                 .values()
                 .append(spreadsheet.getSpreadsheetId(), range, body)
@@ -50,6 +54,23 @@ public class GoogleSheetsService {
 
     public Spreadsheet getSpreadsheet(String id) throws IOException {
         return Objects.requireNonNull(SERVICE_SHEETS).spreadsheets().get(id).execute();
+    }
+
+    public BatchUpdateSpreadsheetResponse renameSpreadsheet(String spreadsheetId, String title) throws IOException {
+        LOGGER.info("Renaming spreadsheet with last updated date");
+        SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(title);
+        List<Request> requests = new ArrayList<>();
+        requests.add(new Request().setUpdateSpreadsheetProperties(
+                new UpdateSpreadsheetPropertiesRequest().setFields(
+                        "title").setProperties(properties)));
+
+        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
+        requestBody.setRequests(requests);
+
+        return Objects.requireNonNull(SERVICE_SHEETS)
+                .spreadsheets()
+                .batchUpdate(spreadsheetId, requestBody)
+                .execute();
     }
 
     public BatchUpdateSpreadsheetResponse createSheet(Spreadsheet spreadsheet,
