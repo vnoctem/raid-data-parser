@@ -15,9 +15,10 @@ public class SkillSheet extends RaidSheet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SkillSheet.class.getName());
     private static final String TITLE = "Skills";
+    private static final int INDEX = 2;
 
     public SkillSheet() {
-        super(TITLE);
+        super(TITLE, INDEX);
         super.values = new ArrayList<>();
     }
 

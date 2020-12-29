@@ -22,9 +22,10 @@ public class ChampionSheet extends RaidSheet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChampionSheet.class.getName());
     private static final String TITLE = "Champions";
+    private static final int INDEX = 1;
 
     public ChampionSheet() {
-        super(TITLE);
+        super(TITLE, INDEX);
         super.values = new ArrayList<>();
     }
 

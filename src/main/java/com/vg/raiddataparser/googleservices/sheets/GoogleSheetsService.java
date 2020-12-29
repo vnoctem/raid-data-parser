@@ -42,12 +42,12 @@ public class GoogleSheetsService {
                 .execute();
     }
 
-    public AppendValuesResponse appendValues(Spreadsheet spreadsheet,
+    public AppendValuesResponse appendValues(String spreadsheetId,
             String range,
             ValueRange body) throws IOException {
         return Objects.requireNonNull(SERVICE_SHEETS).spreadsheets()
                 .values()
-                .append(spreadsheet.getSpreadsheetId(), range, body)
+                .append(spreadsheetId, range, body)
                 .setValueInputOption("RAW")
                 .execute();
     }
@@ -56,10 +56,58 @@ public class GoogleSheetsService {
         return Objects.requireNonNull(SERVICE_SHEETS).spreadsheets().get(id).execute();
     }
 
+    public int getSheetId(String spreadsheetId, int index) throws IOException {
+        return getSpreadsheet(spreadsheetId).getSheets().get(index).getProperties().getSheetId();
+    }
+
+    public int getNumberOfRows(String spreadsheetId, String range) throws IOException {
+        return Objects.requireNonNull(SERVICE_SHEETS)
+                .spreadsheets()
+                .values()
+                .get(spreadsheetId, range)
+                .execute()
+                .getValues()
+                .size();
+    }
+
+    public BatchUpdateSpreadsheetResponse addBanding(String spreadsheetId,
+            int sheetIndex,
+            String range,
+            Color headerColor,
+            Color firstBandColor,
+            Color secondBandColor) throws IOException {
+        LOGGER.info("Adding banding to sheet " + range);
+        List<Request> requests = new ArrayList<>();
+
+        requests.add(new Request()
+                .setAddBanding(new AddBandingRequest()
+                        .setBandedRange(new BandedRange()
+                                .setRange(new GridRange()
+                                        .setSheetId(getSheetId(spreadsheetId, sheetIndex))
+                                        .setEndRowIndex(getNumberOfRows(spreadsheetId, range)))
+                                .setRowProperties(new BandingProperties()
+                                        .setHeaderColor(headerColor)
+                                        .setFirstBandColor(firstBandColor)
+                                        .setSecondBandColor(secondBandColor)
+                                )
+                        )
+                )
+        );
+
+        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
+        requestBody.setRequests(requests);
+
+        return Objects.requireNonNull(SERVICE_SHEETS)
+                .spreadsheets()
+                .batchUpdate(spreadsheetId, requestBody)
+                .execute();
+    }
+
     public BatchUpdateSpreadsheetResponse renameSpreadsheet(String spreadsheetId, String title) throws IOException {
         LOGGER.info("Renaming spreadsheet with last updated date");
         SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(title);
         List<Request> requests = new ArrayList<>();
+
         requests.add(new Request().setUpdateSpreadsheetProperties(
                 new UpdateSpreadsheetPropertiesRequest().setFields(
                         "title").setProperties(properties)));
@@ -77,6 +125,7 @@ public class GoogleSheetsService {
             SheetProperties properties) throws IOException {
         LOGGER.info("Creating sheet " + properties.getTitle());
         List<Request> requests = new ArrayList<>();
+
         requests.add(new Request()
                 .setAddSheet(new AddSheetRequest()
                         .setProperties(properties)));
@@ -93,6 +142,7 @@ public class GoogleSheetsService {
     public void renameSheet(Spreadsheet spreadsheet, SheetProperties properties) throws IOException {
         LOGGER.info("Renaming sheet[" + properties.getSheetId() + "] to " + properties.getTitle());
         List<Request> requests = new ArrayList<>();
+
         requests.add(new Request()
                 .setUpdateSheetProperties(new UpdateSheetPropertiesRequest()
                         .setFields("title")

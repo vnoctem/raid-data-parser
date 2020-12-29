@@ -16,9 +16,10 @@ public class MultiplierSheet extends RaidSheet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MultiplierSheet.class.getName());
     private static final String TITLE = "Multipliers";
+    private static final int INDEX = 0;
 
     public MultiplierSheet() {
-        super(TITLE);
+        super(TITLE, INDEX);
         super.values = new ArrayList<>();
     }
 

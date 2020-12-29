@@ -11,11 +11,12 @@ public abstract class RaidSheet {
 
     private final GoogleSheetsService sheetsService = new GoogleSheetsService();
     public List<List<Object>> values;
-
     private final String title;
+    private final int index;
 
-    public RaidSheet(String title) {
+    public RaidSheet(String title, int index) {
         this.title = title;
+        this.index = index;
     }
 
     /**
@@ -46,9 +47,13 @@ public abstract class RaidSheet {
                 .setTitle(title)
                 .setGridProperties(gridProperties);
 
-        return new Sheet()
+        Sheet sheet = new Sheet()
                 .setProperties(properties)
                 .setData(Collections.singletonList(gridData));
+
+        //sheetId = sheet.getProperties().getSheetId();
+
+        return sheet;
     }
 
     /**
@@ -59,12 +64,11 @@ public abstract class RaidSheet {
      */
     public void writeValuesToSheet(String spreadsheetId) throws IOException {
         try {
-            Spreadsheet spreadsheet = sheetsService.getSpreadsheet(spreadsheetId);
             ValueRange body = new ValueRange().setValues(values);
 
-            sheetsService.appendValues(spreadsheet, title, body);
+            sheetsService.appendValues(spreadsheetId, title, body);
         } catch (IOException e) {
-            throw new IOException("Error while writing to sheet " + title);
+            throw new IOException("Error while writing to sheet " + title, e);
         }
     }
 
@@ -76,13 +80,23 @@ public abstract class RaidSheet {
      */
     public void updateValues(String spreadsheetId) throws IOException {
         try {
-            Spreadsheet spreadsheet = sheetsService.getSpreadsheet(spreadsheetId);
             ValueRange body = new ValueRange().setValues(values);
             String range = title + "!A2:Z";
 
             sheetsService.updateValues(spreadsheetId, range, body);
         } catch (IOException e) {
-            throw new IOException("Error while updating sheet " + title);
+            throw new IOException("Error while updating sheet " + title, e);
+        }
+    }
+
+    public void addBanding(String spreadsheetId,
+            Color headerColor,
+            Color firstBandColor,
+            Color secondBandColor) throws IOException {
+        try {
+            sheetsService.addBanding(spreadsheetId, index, title, headerColor, firstBandColor, secondBandColor);
+        } catch (IOException e) {
+            throw new IOException("Error while adding banding to sheet " + title, e);
         }
     }
 }
