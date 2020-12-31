@@ -2,29 +2,29 @@ package com.vg.raiddataparser.sheet;
 
 import com.google.api.services.sheets.v4.model.*;
 import com.vg.raiddataparser.googleservices.sheets.GoogleSheetsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public abstract class RaidSheet {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RaidSheet.class.getName());
     private final GoogleSheetsService sheetsService = new GoogleSheetsService();
     public List<List<Object>> values;
     private final String title;
     private final int index;
+    private final List<String> headerRowValues;
 
-    public RaidSheet(String title, int index) {
+
+    public RaidSheet(String title, int index, List<String> headerRowValues) {
         this.title = title;
         this.index = index;
+        this.headerRowValues = headerRowValues;
     }
-
-    /**
-     * Create header row
-     *
-     * @return RowData: header row for sheet
-     */
-    protected abstract RowData createHeaderRow();
 
     /**
      * Add object to list of values (values to be written to the sheet)
@@ -32,6 +32,31 @@ public abstract class RaidSheet {
      * @param o Object to be added
      */
     public abstract void addValueToList(Object o);
+
+    /**
+     * Create header row
+     *
+     * @return RowData: header row for sheet
+     */
+    protected RowData createHeaderRow() {
+        LOGGER.info("Creating header row for sheet " + title);
+
+        RowData headerRow = new RowData();
+        List<CellData> cellDataValues = new ArrayList<>();
+
+        for (String s : headerRowValues) {
+            cellDataValues.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(s)
+                    )
+                    .setUserEnteredFormat(new CellFormat()
+                            .setTextFormat(new TextFormat()
+                                    .setBold(true)))
+            );
+        }
+
+        return headerRow.setValues(cellDataValues);
+    }
 
     /**
      * Create a sheet with a frozen header row
@@ -89,6 +114,16 @@ public abstract class RaidSheet {
         }
     }
 
+    /**
+     * Add banding (alternating colors) to the sheet
+     * All rows except header row
+     *
+     * @param spreadsheetId   Spreadsheet Id
+     * @param headerColor     Color for the header row
+     * @param firstBandColor  Color for the first band
+     * @param secondBandColor Color for the second band
+     * @throws IOException when adding banding to the sheet
+     */
     public void addBanding(String spreadsheetId,
             Color headerColor,
             Color firstBandColor,
@@ -99,4 +134,5 @@ public abstract class RaidSheet {
             throw new IOException("Error while adding banding to sheet " + title, e);
         }
     }
+
 }

@@ -103,6 +103,38 @@ public class GoogleSheetsService {
                 .execute();
     }
 
+    public BatchUpdateSpreadsheetResponse formatHeaderRowBoldText(String spreadsheetId,
+            int sheetIndex) throws IOException {
+        LOGGER.info("Making cells text in bold");
+        List<Request> requests = new ArrayList<>();
+
+        requests.add(new Request()
+                .setRepeatCell(new RepeatCellRequest()
+                        .setFields("*")
+                        .setRange(new GridRange()
+                                .setSheetId(getSheetId(spreadsheetId, sheetIndex))
+                                // FIXME:
+                                .setStartRowIndex(0)
+                                .setEndRowIndex(1))
+                        .setCell(new CellData()
+                                .setUserEnteredFormat(new CellFormat()
+                                        .setTextFormat(new TextFormat()
+                                                .setBold(true))
+                                )
+                        )
+                )
+        );
+
+        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
+        requestBody.setRequests(requests);
+
+        return Objects.requireNonNull(SERVICE_SHEETS)
+                .spreadsheets()
+                .batchUpdate(spreadsheetId, requestBody)
+                .execute();
+
+    }
+
     public BatchUpdateSpreadsheetResponse renameSpreadsheet(String spreadsheetId, String title) throws IOException {
         LOGGER.info("Renaming spreadsheet with last updated date");
         SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(title);

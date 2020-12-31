@@ -1,8 +1,5 @@
 package com.vg.raiddataparser.sheet;
 
-import com.google.api.services.sheets.v4.model.CellData;
-import com.google.api.services.sheets.v4.model.ExtendedValue;
-import com.google.api.services.sheets.v4.model.RowData;
 import com.vg.raiddataparser.model.Skill;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,33 +11,20 @@ import java.util.List;
 public class SkillSheet extends RaidSheet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SkillSheet.class.getName());
+
     private static final String TITLE = "Skills";
     private static final int INDEX = 2;
+    private static final List<String> HEADER_ROW_VALUES = Arrays.asList(
+            "Name",
+            "Description",
+            "Cooldown",
+            "Multiplier",
+            "Champion"
+    );
 
     public SkillSheet() {
-        super(TITLE, INDEX);
+        super(TITLE, INDEX, HEADER_ROW_VALUES);
         super.values = new ArrayList<>();
-    }
-
-    @Override
-    protected RowData createHeaderRow() {
-        LOGGER.info("Creating header row for skill sheet");
-
-        RowData headerRow = new RowData();
-        List<CellData> cellDataValues = new ArrayList<>();
-        List<String> stringValues = Arrays.asList(
-                "Name",
-                "Description",
-                "Cooldown",
-                "Multiplier",
-                "Champion"
-        );
-
-        for (String s : stringValues) {
-            cellDataValues.add(new CellData().setUserEnteredValue(new ExtendedValue().setStringValue(s)));
-        }
-
-        return headerRow.setValues(cellDataValues);
     }
 
     @Override
@@ -66,6 +50,5 @@ public class SkillSheet extends RaidSheet {
             ));
         }
     }
-
 
 }

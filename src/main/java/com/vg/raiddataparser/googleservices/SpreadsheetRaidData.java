@@ -71,25 +71,6 @@ public class SpreadsheetRaidData {
         }
     }
 
-    private void createSpreadsheet(File file) throws IOException {
-        SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(getUpdatedSpreadsheetTitle());
-
-        multiplierSheet = new MultiplierSheet();
-        championSheet = new ChampionSheet();
-        skillSheet = new SkillSheet();
-
-        List<Sheet> sheets = new ArrayList<>(Arrays.asList(
-                multiplierSheet.create(),
-                championSheet.create(),
-                skillSheet.create()
-        ));
-
-        Spreadsheet result = sheetsService.createSpreadsheet(properties, sheets);
-        spreadsheetId = result.getSpreadsheetId();
-
-        writeSpreadsheetId(file);
-    }
-
     public void addBandingToSheets() throws IOException {
         Color headerColor = new Color().setRed(1f).setGreen(0.7f).setBlue(0.2f);
         Color firstBandColor = new Color().setRed(0.89f).setGreen(0.89f).setBlue(0.92f);
@@ -101,21 +82,6 @@ public class SpreadsheetRaidData {
     }
 
     public boolean isUpdating() { return updating; }
-
-    private void updateSpreadsheet() throws IOException {
-        LOGGER.info("Updating spreadsheet");
-        try {
-            // Rename spreadsheet
-            sheetsService.renameSpreadsheet(spreadsheetId, getUpdatedSpreadsheetTitle());
-
-            // Update sheets data
-            multiplierSheet.updateValues(spreadsheetId);
-            championSheet.updateValues(spreadsheetId);
-            skillSheet.updateValues(spreadsheetId);
-        } catch (IOException e) {
-            throw new IOException("Error occurred when updating spreadsheet", e);
-        }
-    }
 
     public void addMultiplierToValues(Champion champion) {
         multiplierSheet.addValueToList(champion);
@@ -153,6 +119,40 @@ public class SpreadsheetRaidData {
         skillSheet.updateValues(getSpreadsheetId());
     }
 
+    private void createSpreadsheet(File file) throws IOException {
+        SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(getUpdatedSpreadsheetTitle());
+
+        multiplierSheet = new MultiplierSheet();
+        championSheet = new ChampionSheet();
+        skillSheet = new SkillSheet();
+
+        List<Sheet> sheets = new ArrayList<>(Arrays.asList(
+                multiplierSheet.create(),
+                championSheet.create(),
+                skillSheet.create()
+        ));
+
+        Spreadsheet result = sheetsService.createSpreadsheet(properties, sheets);
+        spreadsheetId = result.getSpreadsheetId();
+
+        writeSpreadsheetIdToFile(file);
+    }
+
+    private void updateSpreadsheet() throws IOException {
+        LOGGER.info("Updating spreadsheet");
+        try {
+            // Rename spreadsheet
+            sheetsService.renameSpreadsheet(spreadsheetId, getUpdatedSpreadsheetTitle());
+
+            // Update sheets data
+            multiplierSheet.updateValues(spreadsheetId);
+            championSheet.updateValues(spreadsheetId);
+            skillSheet.updateValues(spreadsheetId);
+        } catch (IOException e) {
+            throw new IOException("Error occurred when updating spreadsheet", e);
+        }
+    }
+
     private String getUpdatedSpreadsheetTitle() {
         return "RSL - Multipliers (last updated: " + getCurrentDateFormatyyyyMMdd() + ")";
     }
@@ -163,7 +163,7 @@ public class SpreadsheetRaidData {
         return dateFormatter.format(date);
     }
 
-    private void writeSpreadsheetId(File f) throws IOException {
+    private void writeSpreadsheetIdToFile(File f) throws IOException {
         LOGGER.info("Writing spreadsheet ID to file");
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(f, false))) {
             writer.write(spreadsheetId);

@@ -1,8 +1,5 @@
 package com.vg.raiddataparser.sheet;
 
-import com.google.api.services.sheets.v4.model.CellData;
-import com.google.api.services.sheets.v4.model.ExtendedValue;
-import com.google.api.services.sheets.v4.model.RowData;
 import com.vg.raiddataparser.model.champion.Champion;
 import com.vg.raiddataparser.model.champion.attributes.ChampionAffinity;
 import com.vg.raiddataparser.model.champion.attributes.ChampionFaction;
@@ -21,40 +18,29 @@ import java.util.List;
 public class ChampionSheet extends RaidSheet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChampionSheet.class.getName());
+
     private static final String TITLE = "Champions";
     private static final int INDEX = 1;
+    private static final List<String> HEADER_ROW_VALUES = Arrays.asList(
+            "Name",
+            "Faction",
+            "Rarity",
+            "Affinity",
+            "Role",
+            "Health",
+            "Attack",
+            "Defense",
+            "Speed",
+            "Resistance",
+            "Accuracy",
+            "Critical Chance",
+            "Critical Damage",
+            "Critical Heal"
+    );
 
     public ChampionSheet() {
-        super(TITLE, INDEX);
+        super(TITLE, INDEX, HEADER_ROW_VALUES);
         super.values = new ArrayList<>();
-    }
-
-    @Override
-    protected RowData createHeaderRow() {
-        RowData headerRow = new RowData();
-        List<CellData> cellDataValues = new ArrayList<>();
-        List<String> stringValues = Arrays.asList(
-                "Name",
-                "Faction",
-                "Rarity",
-                "Affinity",
-                "Role",
-                "Health",
-                "Attack",
-                "Defense",
-                "Speed",
-                "Resistance",
-                "Accuracy",
-                "Critical Chance",
-                "Critical Damage",
-                "Critical Heal"
-        );
-
-        for (String s : stringValues) {
-            cellDataValues.add(new CellData().setUserEnteredValue(new ExtendedValue().setStringValue(s)));
-        }
-
-        return headerRow.setValues(cellDataValues);
     }
 
     @Override
