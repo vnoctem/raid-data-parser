@@ -133,4 +133,15 @@ public abstract class RaidSheet {
         }
     }
 
+    public void updateBanding(String spreadsheetId,
+            Color headerColor,
+            Color firstBandColor,
+            Color secondBandColor) throws IOException {
+        try {
+            sheetsService.updateBanding(spreadsheetId, index, title, headerColor, firstBandColor, secondBandColor);
+        } catch (IOException e) {
+            throw new IOException("Error while updating banding to sheet " + title, e);
+        }
+    }
+
 }

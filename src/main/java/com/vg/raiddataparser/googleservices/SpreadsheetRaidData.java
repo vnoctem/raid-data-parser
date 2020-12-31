@@ -32,9 +32,9 @@ public class SpreadsheetRaidData {
     private final GoogleDriveService driveService = new GoogleDriveService();
     private final GoogleSheetsService sheetsService = new GoogleSheetsService();
 
-    private RaidSheet multiplierSheet;
-    private RaidSheet championSheet;
-    private RaidSheet skillSheet;
+    private final RaidSheet multiplierSheet = new MultiplierSheet();
+    private final RaidSheet championSheet = new ChampionSheet();
+    private final RaidSheet skillSheet = new SkillSheet();
 
     private boolean updating = false;
 
@@ -122,10 +122,6 @@ public class SpreadsheetRaidData {
     private void createSpreadsheet(File file) throws IOException {
         SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(getUpdatedSpreadsheetTitle());
 
-        multiplierSheet = new MultiplierSheet();
-        championSheet = new ChampionSheet();
-        skillSheet = new SkillSheet();
-
         List<Sheet> sheets = new ArrayList<>(Arrays.asList(
                 multiplierSheet.create(),
                 championSheet.create(),
@@ -148,6 +144,14 @@ public class SpreadsheetRaidData {
             multiplierSheet.updateValues(spreadsheetId);
             championSheet.updateValues(spreadsheetId);
             skillSheet.updateValues(spreadsheetId);
+
+            // Update banding (if necessary)
+            Color headerColor = new Color().setRed(1f).setGreen(0.7f).setBlue(0.2f);
+            Color firstBandColor = new Color().setRed(0.89f).setGreen(0.89f).setBlue(0.92f);
+            Color secondBandColor = new Color().setRed(1f).setGreen(1f).setBlue(1f);;
+
+            multiplierSheet.updateBanding(spreadsheetId, headerColor, firstBandColor, secondBandColor);
+
         } catch (IOException e) {
             throw new IOException("Error occurred when updating spreadsheet", e);
         }

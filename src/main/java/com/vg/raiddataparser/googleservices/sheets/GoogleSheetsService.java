@@ -53,14 +53,17 @@ public class GoogleSheetsService {
     }
 
     public Spreadsheet getSpreadsheet(String id) throws IOException {
-        return Objects.requireNonNull(SERVICE_SHEETS).spreadsheets().get(id).execute();
+        return Objects.requireNonNull(SERVICE_SHEETS)
+                .spreadsheets()
+                .get(id)
+                .execute();
     }
 
-    public int getSheetId(String spreadsheetId, int index) throws IOException {
+    private int getSheetId(String spreadsheetId, int index) throws IOException {
         return getSpreadsheet(spreadsheetId).getSheets().get(index).getProperties().getSheetId();
     }
 
-    public int getNumberOfRows(String spreadsheetId, String range) throws IOException {
+    private int getNumberOfRows(String spreadsheetId, String range) throws IOException {
         return Objects.requireNonNull(SERVICE_SHEETS)
                 .spreadsheets()
                 .values()
@@ -68,6 +71,14 @@ public class GoogleSheetsService {
                 .execute()
                 .getValues()
                 .size();
+    }
+
+    private int getBandedRangeId(String spreadsheetId, int sheetIndex, int bandedRangeIndex) throws IOException {
+        return getSpreadsheet(spreadsheetId).getSheets()
+                .get(sheetIndex)
+                .getBandedRanges()
+                .get(bandedRangeIndex)
+                .getBandedRangeId();
     }
 
     public BatchUpdateSpreadsheetResponse addBanding(String spreadsheetId,
@@ -98,6 +109,42 @@ public class GoogleSheetsService {
         requestBody.setRequests(requests);
 
         return Objects.requireNonNull(SERVICE_SHEETS)
+                .spreadsheets()
+                .batchUpdate(spreadsheetId, requestBody)
+                .execute();
+    }
+
+    public void updateBanding(String spreadsheetId,
+            int sheetIndex,
+            String range,
+            Color headerColor,
+            Color firstBandColor,
+            Color secondBandColor) throws IOException {
+
+        LOGGER.info("Updating banding to sheet " + range);
+        List<Request> requests = new ArrayList<>();
+
+        requests.add(new Request()
+                .setUpdateBanding(new UpdateBandingRequest()
+                        .setFields("*")
+                        .setBandedRange(new BandedRange()
+                                .setBandedRangeId(getBandedRangeId(spreadsheetId, sheetIndex, 0))
+                                .setRange(new GridRange()
+                                        .setSheetId(getSheetId(spreadsheetId, sheetIndex))
+                                        .setEndRowIndex(getNumberOfRows(spreadsheetId, range)))
+                                .setRowProperties(new BandingProperties()
+                                        .setHeaderColor(headerColor)
+                                        .setFirstBandColor(firstBandColor)
+                                        .setSecondBandColor(secondBandColor)
+                                )
+                        )
+                )
+        );
+
+        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
+
+        requestBody.setRequests(requests);
+        Objects.requireNonNull(SERVICE_SHEETS)
                 .spreadsheets()
                 .batchUpdate(spreadsheetId, requestBody)
                 .execute();
