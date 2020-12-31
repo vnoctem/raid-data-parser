@@ -65,20 +65,18 @@ public abstract class RaidSheet {
      */
     public Sheet create() {
         SheetProperties properties = new SheetProperties();
-        GridProperties gridProperties = new GridProperties().setFrozenRowCount(1);
+        GridProperties gridProperties = new GridProperties()
+                .setFrozenRowCount(1)
+                .setFrozenColumnCount(1);
         GridData gridData = new GridData().setRowData(Collections.singletonList(createHeaderRow()));
 
         properties
                 .setTitle(title)
                 .setGridProperties(gridProperties);
 
-        Sheet sheet = new Sheet()
+        return new Sheet()
                 .setProperties(properties)
                 .setData(Collections.singletonList(gridData));
-
-        //sheetId = sheet.getProperties().getSheetId();
-
-        return sheet;
     }
 
     /**
