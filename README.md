@@ -1,6 +1,6 @@
 # raid-data-parser
 
-See the Google Sheet at https://bit.ly/2Mdx9tM
+View the data (Google Sheet) at https://bit.ly/2Mdx9tM
 
 
 Creates a Google Sheet containing parsed data from https://github.com/Da-Teach/RaidStaticData (credits to Da-Teach).
