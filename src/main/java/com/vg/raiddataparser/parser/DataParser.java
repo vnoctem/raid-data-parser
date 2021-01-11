@@ -175,6 +175,7 @@ public class DataParser {
                 spreadsheetRaidData.writeMultiplierDataToSheet();
                 spreadsheetRaidData.writeChampionDataToSheet();
                 spreadsheetRaidData.writeSkillDataToSheet();
+                spreadsheetRaidData.addBandingToSheets();
             }
         } catch (IOException e) {
             LOGGER.error(e.getMessage());

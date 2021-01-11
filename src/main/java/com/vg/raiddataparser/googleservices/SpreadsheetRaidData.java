@@ -1,5 +1,6 @@
 package com.vg.raiddataparser.googleservices;
 
+import com.google.api.services.sheets.v4.model.Color;
 import com.google.api.services.sheets.v4.model.Sheet;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.SpreadsheetProperties;
@@ -31,11 +32,13 @@ public class SpreadsheetRaidData {
     private final GoogleDriveService driveService = new GoogleDriveService();
     private final GoogleSheetsService sheetsService = new GoogleSheetsService();
 
-    private RaidSheet multiplierSheet;
-    private RaidSheet championSheet;
-    private RaidSheet skillSheet;
+    private final RaidSheet multiplierSheet = new MultiplierSheet();
+    private final RaidSheet championSheet = new ChampionSheet();
+    private final RaidSheet skillSheet = new SkillSheet();
 
     private boolean updating = false;
+
+    private String spreadsheetId;
 
     public SpreadsheetRaidData() {
         initializeRaidData();
@@ -43,36 +46,24 @@ public class SpreadsheetRaidData {
 
     private void initializeRaidData() {
         File file = new File(RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME);
-        SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(getUpdatedSpreadsheetTitle());
-
-        multiplierSheet = new MultiplierSheet();
-        championSheet = new ChampionSheet();
-        skillSheet = new SkillSheet();
-
-        List<Sheet> sheets = new ArrayList<>(Arrays.asList(
-                multiplierSheet.create(),
-                championSheet.create(),
-                skillSheet.create()
-        ));
 
         try {
             if (file.exists()) { // spreadsheet_id.txt exists
-                String spreadsheetId = readSpreadsheetId(file);
+                spreadsheetId = readSpreadsheetId(file);
 
                 if (driveService.fileExists(spreadsheetId)) { // spreadsheet with corresponding ID exists on Drive
                     LOGGER.info("Spreadsheet already exists on Drive");
                     updating = true;
-                    updateSpreadsheet(spreadsheetId);
+                    updateSpreadsheet();
+
                 } else { // spreadsheet with corresponding ID doesn't exist on Drive
                     LOGGER.info("Spreadsheet does not exist");
-                    Spreadsheet result = sheetsService.createSpreadsheet(properties, sheets);
-                    writeSpreadsheetId(file, result.getSpreadsheetId());
+                    createSpreadsheet(file);
                 }
             } else { // spreadsheet_id.txt doesn't exist
                 LOGGER.info("Creating new local file " + file.getAbsolutePath());
                 if (file.createNewFile()) {
-                    Spreadsheet result = sheetsService.createSpreadsheet(properties, sheets);
-                    writeSpreadsheetId(file, result.getSpreadsheetId());
+                    createSpreadsheet(file);
                 }
             }
         } catch (IOException e) {
@@ -80,26 +71,17 @@ public class SpreadsheetRaidData {
         }
     }
 
-    public boolean isUpdating() {
-        return updating;
+    public void addBandingToSheets() throws IOException {
+        Color headerColor = new Color().setRed(1f).setGreen(0.7f).setBlue(0.2f);
+        Color firstBandColor = new Color().setRed(0.89f).setGreen(0.89f).setBlue(0.92f);
+        Color secondBandColor = new Color().setRed(1f).setGreen(1f).setBlue(1f);;
+
+        multiplierSheet.addBanding(spreadsheetId, headerColor, firstBandColor, secondBandColor);
+        championSheet.addBanding(spreadsheetId, headerColor, firstBandColor, secondBandColor);
+        skillSheet.addBanding(spreadsheetId, headerColor, firstBandColor, secondBandColor);
     }
 
-    private void updateSpreadsheet(String spreadsheetId) throws IOException {
-        LOGGER.info("Updating spreadsheet");
-        try {
-            // Rename spreadsheet
-            sheetsService.renameSpreadsheet(spreadsheetId, getUpdatedSpreadsheetTitle());
-
-            // Update sheets data
-            multiplierSheet.updateValues(spreadsheetId);
-            championSheet.updateValues(spreadsheetId);
-            skillSheet.updateValues(spreadsheetId);
-        } catch (IOException e) {
-            throw new IOException("Error occurred when updating spreadsheet title");
-        }
-
-
-    }
+    public boolean isUpdating() { return updating; }
 
     public void addMultiplierToValues(Champion champion) {
         multiplierSheet.addValueToList(champion);
@@ -137,6 +119,44 @@ public class SpreadsheetRaidData {
         skillSheet.updateValues(getSpreadsheetId());
     }
 
+    private void createSpreadsheet(File file) throws IOException {
+        SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(getUpdatedSpreadsheetTitle());
+
+        List<Sheet> sheets = new ArrayList<>(Arrays.asList(
+                multiplierSheet.create(),
+                championSheet.create(),
+                skillSheet.create()
+        ));
+
+        Spreadsheet result = sheetsService.createSpreadsheet(properties, sheets);
+        spreadsheetId = result.getSpreadsheetId();
+
+        writeSpreadsheetIdToFile(file);
+    }
+
+    private void updateSpreadsheet() throws IOException {
+        LOGGER.info("Updating spreadsheet");
+        try {
+            // Rename spreadsheet
+            sheetsService.renameSpreadsheet(spreadsheetId, getUpdatedSpreadsheetTitle());
+
+            // Update sheets data
+            multiplierSheet.updateValues(spreadsheetId);
+            championSheet.updateValues(spreadsheetId);
+            skillSheet.updateValues(spreadsheetId);
+
+            // Update banding (if necessary)
+            Color headerColor = new Color().setRed(1f).setGreen(0.7f).setBlue(0.2f);
+            Color firstBandColor = new Color().setRed(0.89f).setGreen(0.89f).setBlue(0.92f);
+            Color secondBandColor = new Color().setRed(1f).setGreen(1f).setBlue(1f);;
+
+            multiplierSheet.updateBanding(spreadsheetId, headerColor, firstBandColor, secondBandColor);
+
+        } catch (IOException e) {
+            throw new IOException("Error occurred when updating spreadsheet", e);
+        }
+    }
+
     private String getUpdatedSpreadsheetTitle() {
         return "RSL - Multipliers (last updated: " + getCurrentDateFormatyyyyMMdd() + ")";
     }
@@ -147,43 +167,16 @@ public class SpreadsheetRaidData {
         return dateFormatter.format(date);
     }
 
-    private void writeSpreadsheetId(File f, String spreadsheetId) throws IOException {
+    private void writeSpreadsheetIdToFile(File f) throws IOException {
         LOGGER.info("Writing spreadsheet ID to file");
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(f, false))) {
             writer.write(spreadsheetId);
         } catch (IOException e) {
             throw new IOException("Error occurred when writing spreadsheet ID to file \""
                     + RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME
-                    + "\". Operation will be aborted.");
+                    + "\". Operation will be aborted.", e);
         }
     }
-
-    /*private void writeSheetIds(File f, Spreadsheet spreadsheet) throws IOException {
-        LOGGER.info("Writing sheets' IDs to file");
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(f, false))) {
-            for (Sheet s : spreadsheet.getSheets()) {
-                writer.write(s.getProperties().getSheetId());
-            }
-        } catch (IOException e) {
-            throw new IOException("Error occurred when writing sheet ID to file \""
-                    + RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME
-                    + "\". Operation will be aborted.");
-        }
-    }*/
-
-    /*private String getSheetId(File f, String sheetName) throws IOException {
-        LOGGER.info("Retrieving spreadsheet ID from file");
-        try (BufferedReader reader = new BufferedReader(new FileReader(f))) {
-            switch (sheetName) {
-                case "Multipiers"
-            }
-            return reader.readLine();
-        } catch (IOException e) {
-            throw new IOException("Error occurred when retrieving spreadsheet ID from file \""
-                    + RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME
-                    + "\". Operation will be aborted.");
-        }
-    }*/
 
     private String getSpreadsheetId() throws IOException {
         File file = new File(RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME);
@@ -197,7 +190,7 @@ public class SpreadsheetRaidData {
         } catch (IOException e) {
             throw new IOException("Error occurred when retrieving spreadsheet ID from file \""
                     + RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME
-                    + "\". Operation will be aborted.");
+                    + "\". Operation will be aborted.", e);
         }
     }
 
