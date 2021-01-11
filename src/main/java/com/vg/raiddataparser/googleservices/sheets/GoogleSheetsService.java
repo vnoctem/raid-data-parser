@@ -73,39 +73,4 @@ public class GoogleSheetsService {
                 .execute();
     }
 
-    public BatchUpdateSpreadsheetResponse createSheet(Spreadsheet spreadsheet,
-            SheetProperties properties) throws IOException {
-        LOGGER.info("Creating sheet " + properties.getTitle());
-        List<Request> requests = new ArrayList<>();
-        requests.add(new Request()
-                .setAddSheet(new AddSheetRequest()
-                        .setProperties(properties)));
-        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
-        requestBody.setRequests(requests);
-        requestBody.setIncludeSpreadsheetInResponse(true);
-
-        return Objects.requireNonNull(SERVICE_SHEETS)
-                .spreadsheets()
-                .batchUpdate(spreadsheet.getSpreadsheetId(), requestBody)
-                .execute();
-    }
-
-    public void renameSheet(Spreadsheet spreadsheet, SheetProperties properties) throws IOException {
-        LOGGER.info("Renaming sheet[" + properties.getSheetId() + "] to " + properties.getTitle());
-        List<Request> requests = new ArrayList<>();
-        requests.add(new Request()
-                .setUpdateSheetProperties(new UpdateSheetPropertiesRequest()
-                        .setFields("title")
-                        .setProperties(properties)));
-
-        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
-        requestBody.setRequests(requests);
-        requestBody.setIncludeSpreadsheetInResponse(true);
-
-        Objects.requireNonNull(SERVICE_SHEETS)
-                .spreadsheets()
-                .batchUpdate(spreadsheet.getSpreadsheetId(), requestBody)
-                .execute();
-    }
-
 }
