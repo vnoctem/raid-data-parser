@@ -17,10 +17,7 @@ public class GoogleSheetsService {
     private static final Sheets SERVICE_SHEETS = GoogleServiceUtil.getSheetsService();
 
     public GoogleSheetsService() {
-        LOGGER.info("Initializing GoogleSheetsService...");
-        if (SERVICE_SHEETS == null) {
-            throw new NullPointerException("Error while initializing GoogleSheetsService: Sheets service is null.");
-        }
+        Objects.requireNonNull(SERVICE_SHEETS, "Error while initializing GoogleSheetsService: Sheets service is null.");
         LOGGER.info("GoogleSheetsService initialized");
     }
 
@@ -32,20 +29,16 @@ public class GoogleSheetsService {
         return Objects.requireNonNull(SERVICE_SHEETS).spreadsheets().create(spreadsheet).execute();
     }
 
-    public UpdateValuesResponse updateValues(String spreadsheetId,
-            String range,
-            ValueRange body) throws IOException {
-        return Objects.requireNonNull(SERVICE_SHEETS).spreadsheets()
+    public void updateValues(String spreadsheetId, String range, ValueRange body) throws IOException {
+        Objects.requireNonNull(SERVICE_SHEETS).spreadsheets()
                 .values()
                 .update(spreadsheetId, range, body)
                 .setValueInputOption("RAW")
                 .execute();
     }
 
-    public AppendValuesResponse appendValues(String spreadsheetId,
-            String range,
-            ValueRange body) throws IOException {
-        return Objects.requireNonNull(SERVICE_SHEETS).spreadsheets()
+    public void appendValues(String spreadsheetId, String range, ValueRange body) throws IOException {
+        Objects.requireNonNull(SERVICE_SHEETS).spreadsheets()
                 .values()
                 .append(spreadsheetId, range, body)
                 .setValueInputOption("RAW")
@@ -81,7 +74,7 @@ public class GoogleSheetsService {
                 .getBandedRangeId();
     }
 
-    public BatchUpdateSpreadsheetResponse addBanding(String spreadsheetId,
+    public void addBanding(String spreadsheetId,
             int sheetIndex,
             String range,
             Color headerColor,
@@ -89,6 +82,7 @@ public class GoogleSheetsService {
             Color secondBandColor) throws IOException {
         LOGGER.info("Adding banding to sheet " + range);
         List<Request> requests = new ArrayList<>();
+        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
 
         requests.add(new Request()
                 .setAddBanding(new AddBandingRequest()
@@ -105,10 +99,9 @@ public class GoogleSheetsService {
                 )
         );
 
-        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
         requestBody.setRequests(requests);
 
-        return Objects.requireNonNull(SERVICE_SHEETS)
+        Objects.requireNonNull(SERVICE_SHEETS)
                 .spreadsheets()
                 .batchUpdate(spreadsheetId, requestBody)
                 .execute();
@@ -120,9 +113,9 @@ public class GoogleSheetsService {
             Color headerColor,
             Color firstBandColor,
             Color secondBandColor) throws IOException {
-
         LOGGER.info("Updating banding to sheet " + range);
         List<Request> requests = new ArrayList<>();
+        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
 
         requests.add(new Request()
                 .setUpdateBanding(new UpdateBandingRequest()
@@ -141,62 +134,30 @@ public class GoogleSheetsService {
                 )
         );
 
-        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
-
         requestBody.setRequests(requests);
+
         Objects.requireNonNull(SERVICE_SHEETS)
                 .spreadsheets()
                 .batchUpdate(spreadsheetId, requestBody)
                 .execute();
     }
 
-    public BatchUpdateSpreadsheetResponse formatHeaderRowBoldText(String spreadsheetId,
-            int sheetIndex) throws IOException {
-        LOGGER.info("Making cells text in bold");
-        List<Request> requests = new ArrayList<>();
-
-        requests.add(new Request()
-                .setRepeatCell(new RepeatCellRequest()
-                        .setFields("*")
-                        .setRange(new GridRange()
-                                .setSheetId(getSheetId(spreadsheetId, sheetIndex))
-                                // FIXME:
-                                .setStartRowIndex(0)
-                                .setEndRowIndex(1))
-                        .setCell(new CellData()
-                                .setUserEnteredFormat(new CellFormat()
-                                        .setTextFormat(new TextFormat()
-                                                .setBold(true))
-                                )
-                        )
-                )
-        );
-
-        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
-        requestBody.setRequests(requests);
-
-        return Objects.requireNonNull(SERVICE_SHEETS)
-                .spreadsheets()
-                .batchUpdate(spreadsheetId, requestBody)
-                .execute();
-    }
-
-    public BatchUpdateSpreadsheetResponse renameSpreadsheet(String spreadsheetId, String title) throws IOException {
+    public void renameSpreadsheet(String spreadsheetId, String title) throws IOException {
         LOGGER.info("Renaming spreadsheet with last updated date");
         SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(title);
         List<Request> requests = new ArrayList<>();
+        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
 
         requests.add(new Request().setUpdateSpreadsheetProperties(
                 new UpdateSpreadsheetPropertiesRequest().setFields(
                         "title").setProperties(properties)));
 
-        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
         requestBody.setRequests(requests);
 
-        return Objects.requireNonNull(SERVICE_SHEETS)
+        Objects.requireNonNull(SERVICE_SHEETS)
                 .spreadsheets()
                 .batchUpdate(spreadsheetId, requestBody)
                 .execute();
     }
-  
+
 }

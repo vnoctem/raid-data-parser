@@ -29,6 +29,10 @@ public class SpreadsheetRaidData {
     private static final String SPREADSHEET_ID_FILE_NAME = "/spreadsheet_id.txt";
     private static final String RESOURCES_PATH = "src/main/resources";
 
+    private static final Color HEADER_COLOR = new Color().setRed(1f).setGreen(0.7f).setBlue(0.2f);
+    private static final Color FIRST_BAND_COLOR = new Color().setRed(0.89f).setGreen(0.89f).setBlue(0.92f);
+    private static final Color SECOND_BAND_COLOR = new Color().setRed(1f).setGreen(1f).setBlue(1f);
+
     private final GoogleDriveService driveService = new GoogleDriveService();
     private final GoogleSheetsService sheetsService = new GoogleSheetsService();
 
@@ -72,13 +76,9 @@ public class SpreadsheetRaidData {
     }
 
     public void addBandingToSheets() throws IOException {
-        Color headerColor = new Color().setRed(1f).setGreen(0.7f).setBlue(0.2f);
-        Color firstBandColor = new Color().setRed(0.89f).setGreen(0.89f).setBlue(0.92f);
-        Color secondBandColor = new Color().setRed(1f).setGreen(1f).setBlue(1f);;
-
-        multiplierSheet.addBanding(spreadsheetId, headerColor, firstBandColor, secondBandColor);
-        championSheet.addBanding(spreadsheetId, headerColor, firstBandColor, secondBandColor);
-        skillSheet.addBanding(spreadsheetId, headerColor, firstBandColor, secondBandColor);
+        multiplierSheet.addBanding(spreadsheetId, HEADER_COLOR, FIRST_BAND_COLOR, SECOND_BAND_COLOR);
+        championSheet.addBanding(spreadsheetId, HEADER_COLOR, FIRST_BAND_COLOR, SECOND_BAND_COLOR);
+        skillSheet.addBanding(spreadsheetId, HEADER_COLOR, FIRST_BAND_COLOR, SECOND_BAND_COLOR);
     }
 
     public boolean isUpdating() { return updating; }
@@ -121,13 +121,11 @@ public class SpreadsheetRaidData {
 
     private void createSpreadsheet(File file) throws IOException {
         SpreadsheetProperties properties = new SpreadsheetProperties().setTitle(getUpdatedSpreadsheetTitle());
-
         List<Sheet> sheets = new ArrayList<>(Arrays.asList(
                 multiplierSheet.create(),
                 championSheet.create(),
                 skillSheet.create()
         ));
-
         Spreadsheet result = sheetsService.createSpreadsheet(properties, sheets);
         spreadsheetId = result.getSpreadsheetId();
 
@@ -146,12 +144,9 @@ public class SpreadsheetRaidData {
             skillSheet.updateValues(spreadsheetId);
 
             // Update banding (if necessary)
-            Color headerColor = new Color().setRed(1f).setGreen(0.7f).setBlue(0.2f);
-            Color firstBandColor = new Color().setRed(0.89f).setGreen(0.89f).setBlue(0.92f);
-            Color secondBandColor = new Color().setRed(1f).setGreen(1f).setBlue(1f);;
-
-            multiplierSheet.updateBanding(spreadsheetId, headerColor, firstBandColor, secondBandColor);
-
+            multiplierSheet.updateBanding(spreadsheetId, HEADER_COLOR, FIRST_BAND_COLOR, SECOND_BAND_COLOR);
+            championSheet.updateBanding(spreadsheetId, HEADER_COLOR, FIRST_BAND_COLOR, SECOND_BAND_COLOR);
+            skillSheet.updateBanding(spreadsheetId, HEADER_COLOR, FIRST_BAND_COLOR, SECOND_BAND_COLOR);
         } catch (IOException e) {
             throw new IOException("Error occurred when updating spreadsheet", e);
         }

@@ -20,10 +20,7 @@ public class GoogleDriveService {
     private static final Drive SERVICE_DRIVE = GoogleServiceUtil.getDriveService();
 
     public GoogleDriveService() {
-        LOGGER.info("Initializing GoogleDriveService...");
-        if (SERVICE_DRIVE == null) {
-            throw new NullPointerException("Error while initializing GoogleDriveService: Drive service is null.");
-        }
+        Objects.requireNonNull(SERVICE_DRIVE, "Error while initializing GoogleDriveService: Drive service is null.");
         LOGGER.info("GoogleDriveService initialized");
     }
 
@@ -50,12 +47,12 @@ public class GoogleDriveService {
      * @throws IOException
      */
     public boolean fileExists(String id) throws IOException {
-        List<File> files = getFiles();
-        for (File file : files) {
+        for (File file : getFiles()) {
             if (id.equals(file.getId()) && !file.getTrashed()) {
                 return true;
             }
         }
         return false;
     }
+
 }

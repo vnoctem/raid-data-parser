@@ -55,7 +55,6 @@ public class MultiplierSheet extends RaidSheet {
                 }
             }
         }
-
         values.add(rowValues);
     }
 

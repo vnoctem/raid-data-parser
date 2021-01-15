@@ -9,27 +9,18 @@ public class Skill {
 
     @Id
     private int id;
-
     @ManyToOne
     @JoinColumn(name = "champion_id")
     private Champion champion;
-
     private int revision;
-
     private String name;
-
     @Column(length = 1000000)
     private String description;
-
     private int cooldown;
-
     private String multiplierFormula;
-
     private int visibility;
-
     @Column(name = "s_group")
     private int group;
-
 
     public Skill() {}
 
@@ -146,4 +137,5 @@ public class Skill {
             return new Skill(id, revision, name, description, cooldown, multiplierFormula, visibility, group, champion);
         }
     }
+
 }

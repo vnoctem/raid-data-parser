@@ -25,16 +25,16 @@ import java.util.List;
 public final class GoogleServiceUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GoogleServiceUtil.class.getName());
+    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+
+    private static final List<String> SCOPES = Arrays.asList(
+            SheetsScopes.SPREADSHEETS,
+            DriveScopes.DRIVE_METADATA_READONLY
+    );
 
     private static final String CREDENTIALS_FILE_PATH = "/google-oauth-credentials.json";
     private static final String TOKENS_DIRECTORY_PATH = "oauth2.0_tokens";
     private static final String APPLICATION_NAME = "Raid data parser";
-
-    private static final List<String> SCOPES = Arrays.asList(
-            SheetsScopes.SPREADSHEETS,
-            DriveScopes.DRIVE_METADATA_READONLY);
-
-    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
     private GoogleServiceUtil() {}
 
@@ -54,7 +54,6 @@ public final class GoogleServiceUtil {
             throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH + ".");
         }
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
-
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 HTTP_TRANSPORT,
                 JSON_FACTORY,
@@ -100,4 +99,5 @@ public final class GoogleServiceUtil {
         }
         return null;
     }
+
 }

@@ -43,4 +43,5 @@ public enum ChampionFaction {
         }
         return String.join(" ", words);
     }
+
 }
