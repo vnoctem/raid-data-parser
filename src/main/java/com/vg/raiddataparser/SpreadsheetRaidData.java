@@ -1,4 +1,4 @@
-package com.vg.raiddataparser.googleservices;
+package com.vg.raiddataparser;
 
 import com.google.api.services.sheets.v4.model.Color;
 import com.google.api.services.sheets.v4.model.Sheet;
@@ -30,7 +30,7 @@ public class SpreadsheetRaidData {
     private static final String RESOURCES_PATH = "src/main/resources";
 
     private static final Color HEADER_COLOR = new Color().setRed(1f).setGreen(0.7f).setBlue(0.2f);
-    private static final Color FIRST_BAND_COLOR = new Color().setRed(0.89f).setGreen(0.89f).setBlue(0.92f);
+    private static final Color FIRST_BAND_COLOR = new Color().setRed(0.92f).setGreen(0.92f).setBlue(0.95f);
     private static final Color SECOND_BAND_COLOR = new Color().setRed(1f).setGreen(1f).setBlue(1f);
 
     private final GoogleDriveService driveService = new GoogleDriveService();
@@ -58,8 +58,6 @@ public class SpreadsheetRaidData {
                 if (driveService.fileExists(spreadsheetId)) { // spreadsheet with corresponding ID exists on Drive
                     LOGGER.info("Spreadsheet already exists on Drive");
                     updating = true;
-                    updateSpreadsheet();
-
                 } else { // spreadsheet with corresponding ID doesn't exist on Drive
                     LOGGER.info("Spreadsheet does not exist");
                     createSpreadsheet(file);
@@ -132,7 +130,7 @@ public class SpreadsheetRaidData {
         writeSpreadsheetIdToFile(file);
     }
 
-    private void updateSpreadsheet() throws IOException {
+    public void updateSpreadsheet() throws IOException {
         LOGGER.info("Updating spreadsheet");
         try {
             // Rename spreadsheet

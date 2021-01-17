@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.vg.raiddataparser.googleservices.SpreadsheetRaidData;
+import com.vg.raiddataparser.SpreadsheetRaidData;
 import com.vg.raiddataparser.model.Skill;
 import com.vg.raiddataparser.model.champion.Champion;
 import com.vg.raiddataparser.repository.ChampionRepository;
@@ -171,6 +171,7 @@ public class DataParser {
                 spreadsheetRaidData.updateMultiplierData();
                 spreadsheetRaidData.updateChampionData();
                 spreadsheetRaidData.updateSkillData();
+                spreadsheetRaidData.updateSpreadsheet();
             } else {
                 spreadsheetRaidData.writeMultiplierDataToSheet();
                 spreadsheetRaidData.writeChampionDataToSheet();
