@@ -2,24 +2,17 @@ package com.vg.raiddataparser.model;
 
 import com.vg.raiddataparser.model.champion.Champion;
 
-import javax.persistence.*;
 
-@Entity
 public class Skill {
 
-    @Id
     private int id;
-    @ManyToOne
-    @JoinColumn(name = "champion_id")
     private Champion champion;
     private int revision;
     private String name;
-    @Column(length = 1000000)
     private String description;
     private int cooldown;
     private String multiplierFormula;
     private int visibility;
-    @Column(name = "s_group")
     private int group;
 
     public Skill() {}

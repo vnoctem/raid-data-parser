@@ -2,15 +2,10 @@ package com.vg.raiddataparser.model.champion;
 
 import com.vg.raiddataparser.model.Skill;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import java.util.List;
 
-@Entity
 public class Champion {
 
-    @Id
     private int id;
     private String name;
     private int affinity;
@@ -26,7 +21,6 @@ public class Champion {
     private int criticalChance;
     private int criticalDamage;
     private int criticalHeal;
-    @OneToMany(mappedBy = "champion")
     private List<Skill> skills;
 
     public Champion() {}

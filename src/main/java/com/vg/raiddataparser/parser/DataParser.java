@@ -7,11 +7,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.vg.raiddataparser.SpreadsheetRaidData;
 import com.vg.raiddataparser.model.Skill;
 import com.vg.raiddataparser.model.champion.Champion;
-import com.vg.raiddataparser.repository.ChampionRepository;
-import com.vg.raiddataparser.repository.SkillRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -24,11 +21,6 @@ import java.util.List;
 
 @Component
 public class DataParser {
-
-    @Autowired
-    private ChampionRepository championRepository;
-    @Autowired
-    private SkillRepository skillRepository;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataParser.class.getName());
 
@@ -118,9 +110,6 @@ public class DataParser {
                         .setCriticalHeal(calculateBaseStatValue(championCriticalHeal))
                         .build();
 
-                // TODO: review (save champion in DB)
-                //championRepository.save(champion);
-
                 // Get SkillData node
                 JsonNode nodeSkillData = rootNode.get(JSON_SKILL_DATA_NODE);
                 ArrayNode nodeSkills = (ArrayNode) nodeSkillData.get(JSON_SKILLS_NODE);
@@ -140,7 +129,6 @@ public class DataParser {
 
                                 // TODO: review (save skill in DB)
                                 // Save Skill in database
-                                //skillRepository.save(createSkill(rootNode, nodeSkills.get(i), champion));
                                 Skill skill = createSkill(rootNode, nodeSkills.get(i), champion);
 
                                 championSkills.add(skill);
