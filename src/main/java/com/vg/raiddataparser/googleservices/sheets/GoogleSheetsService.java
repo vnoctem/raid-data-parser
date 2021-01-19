@@ -66,12 +66,14 @@ public class GoogleSheetsService {
                 .size();
     }
 
-    private int getBandedRangeId(String spreadsheetId, int sheetIndex, int bandedRangeIndex) throws IOException {
+    private List<BandedRange> getBandedRanges(String spreadsheetId, int sheetIndex) throws IOException {
         return getSpreadsheet(spreadsheetId).getSheets()
                 .get(sheetIndex)
-                .getBandedRanges()
-                .get(bandedRangeIndex)
-                .getBandedRangeId();
+                .getBandedRanges();
+    }
+
+    private int getBandedRangeId(List<BandedRange> bandedRanges, int bandedRangeIndex) throws IOException {
+        return bandedRanges.get(bandedRangeIndex).getBandedRangeId();
     }
 
     public void addBanding(String spreadsheetId,
@@ -116,30 +118,35 @@ public class GoogleSheetsService {
         LOGGER.info("Updating banding to sheet " + range);
         List<Request> requests = new ArrayList<>();
         BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
+        List<BandedRange> bandedRanges = getBandedRanges(spreadsheetId, sheetIndex);
 
-        requests.add(new Request()
-                .setUpdateBanding(new UpdateBandingRequest()
-                        .setFields("*")
-                        .setBandedRange(new BandedRange()
-                                .setBandedRangeId(getBandedRangeId(spreadsheetId, sheetIndex, 0))
-                                .setRange(new GridRange()
-                                        .setSheetId(getSheetId(spreadsheetId, sheetIndex))
-                                        .setEndRowIndex(getNumberOfRows(spreadsheetId, range)))
-                                .setRowProperties(new BandingProperties()
-                                        .setHeaderColor(headerColor)
-                                        .setFirstBandColor(firstBandColor)
-                                        .setSecondBandColor(secondBandColor)
-                                )
-                        )
-                )
-        );
+        if (bandedRanges == null) { // if not banded range, add banding
+            addBanding(spreadsheetId, sheetIndex, range, headerColor, firstBandColor, secondBandColor);
+        } else { // if banded range exists, update banding
+            requests.add(new Request()
+                    .setUpdateBanding(new UpdateBandingRequest()
+                            .setFields("*")
+                            .setBandedRange(new BandedRange()
+                                    .setBandedRangeId(getBandedRangeId(bandedRanges, 0))
+                                    .setRange(new GridRange()
+                                            .setSheetId(getSheetId(spreadsheetId, sheetIndex))
+                                            .setEndRowIndex(getNumberOfRows(spreadsheetId, range)))
+                                    .setRowProperties(new BandingProperties()
+                                            .setHeaderColor(headerColor)
+                                            .setFirstBandColor(firstBandColor)
+                                            .setSecondBandColor(secondBandColor)
+                                    )
+                            )
+                    )
+            );
 
-        requestBody.setRequests(requests);
+            requestBody.setRequests(requests);
 
-        Objects.requireNonNull(SERVICE_SHEETS)
-                .spreadsheets()
-                .batchUpdate(spreadsheetId, requestBody)
-                .execute();
+            Objects.requireNonNull(SERVICE_SHEETS)
+                    .spreadsheets()
+                    .batchUpdate(spreadsheetId, requestBody)
+                    .execute();
+        }
     }
 
     public void renameSpreadsheet(String spreadsheetId, String title) throws IOException {
