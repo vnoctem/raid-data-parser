@@ -18,12 +18,12 @@ Creates a Google Sheet containing data parsed from a JSON https://github.com/Da-
 2. Enable Google Sheets API and Google Drive API
 3. Create credentials (OAuth Client ID) for a Web application and add `http://localhost:8888/Callback` as an authorized redirect URI
 4. Download JSON of your credentials
-5. Replace the file `src/main/resources/google-oauth-credentials.json.TEMPLATE` with your downloaded file and change the name to `google-oauth-credentials.json``
+5. Replace the file `src/main/resources/google-oauth-credentials.json.TEMPLATE` with your downloaded file and change the name to `google-oauth-credentials.json`
 
 #### Run the application
 1. Navigate at the root of the project
 2. `./mvnw clean install`
 3. `./mvnw spring-boot:run`
 4. In your terminal, copy the link for the Google Oauth consent screen and open in a browser
-5. Sign in a Google account and allow permissions
+5. Sign in your Google account and allow permissions
 6. After the application is done running, a Google Sheet named `RSL - Multipliers (last updated: YYYY-MM-DD)` will be present on your Drive
