@@ -1,6 +1,6 @@
 # Raid data parser
 
-View the data in this [Google Sheet](https://docs.google.com/spreadsheets/d/1V2CvJWzpBZFiRGgs92B0FW-HnsMukyIr3_IJfLtmMGo/edit#gid=1759257290 "RSL - Multipliers").
+View the data in this [Google Sheet](https://docs.google.com/spreadsheets/d/1V2CvJWzpBZFiRGgs92B0FW-HnsMukyIr3_IJfLtmMGo/edit#gid=1759257290 "RSL - Multipliers"). The application is automatically running everyday at 7 pm EST to update the data.
 
 
 ### Description
