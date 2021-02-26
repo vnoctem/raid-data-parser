@@ -217,7 +217,7 @@ public class DataParser {
     }
 
     private int calculateBaseStatValue(long stat) {
-        return (int) (stat / (Integer.MAX_VALUE * 2L - 1));
+        return (int) (stat / Math.pow(2, 32));
     }
 
 }
