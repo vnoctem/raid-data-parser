@@ -204,7 +204,7 @@ public class DataParser {
 
     /* For scalable stats (health, attack, defence)
      * Formula: BASE STAT * MULTIPLIER_1 * MULTIPLIER_2
-     * Ascension level | MULTIPLIER_1 | MULTIPLIER_2
+     *   Rank level    | MULTIPLIER_1 | MULTIPLIER_2
      *        1        |  1           |  2
      *        2        |  1.60000002  |  1.89999998
      *        3        |  2.43199992  |  1.79999995
