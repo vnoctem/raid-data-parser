@@ -32,7 +32,9 @@ public enum ChampionFaction {
         this.code = code;
     }
 
-    public static String getName(int code) { return CODE_TO_FACTION.get(code).toString(); }
+    public static String getName(int code) {
+        return CODE_TO_FACTION.get(code).toString();
+    }
 
     @Override
     public String toString() {
