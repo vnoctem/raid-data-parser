@@ -16,7 +16,8 @@ public enum ChampionFaction {
     DARK_ELVES(11),
     KNIGHT_REVENANT(12),
     BARBARIANS(13),
-    DWARVES(16);
+    DWARVES(16),
+    SHADOWKIN(15);
 
     public final int code;
     private static final Map<Integer, ChampionFaction> CODE_TO_FACTION = new HashMap<>();
@@ -31,9 +32,7 @@ public enum ChampionFaction {
         this.code = code;
     }
 
-    public static String getName(int code) {
-        return CODE_TO_FACTION.get(code).toString();
-    }
+    public static String getName(int code) { return CODE_TO_FACTION.get(code).toString(); }
 
     @Override
     public String toString() {
