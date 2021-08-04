@@ -41,8 +41,10 @@ public class MultiplierSheet extends RaidSheet {
 
         // Add multipliers only if:
         // - champion name is not empty
-        // - champion name does not contains "hero"
-        if (!c.getName().trim().isEmpty() && !c.getName().toLowerCase().contains("hero")) {
+        // - champion name does not contain "hero"
+        if (c.getName() != null
+                && !c.getName().trim().isEmpty()
+                && !c.getName().toLowerCase().contains("hero")) {
             LOGGER.info("Adding multipliers");
 
             rowValues = new ArrayList<>();

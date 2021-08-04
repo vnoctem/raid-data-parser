@@ -35,7 +35,8 @@ public class SkillSheet extends RaidSheet {
         // - name is not empty
         // - name does not contain "skill" and "name"
         // - description is not empty
-        if (!s.getName().trim().isEmpty()
+        if (s.getName() != null
+                && !s.getName().trim().isEmpty()
                 && !(s.getName().toLowerCase().contains("skill") && s.getName().toLowerCase().contains("name"))
                 && !s.getDescription().trim().isEmpty()) {
 
