@@ -17,24 +17,16 @@ public class Skill {
 
     public Skill() {}
 
-    public Skill(int id,
-            int revision,
-            String name,
-            String description,
-            int cooldown,
-            String multiplierFormula,
-            int visibility,
-            int group,
-            Champion champion) {
-        this.id = id;
-        this.revision = revision;
-        this.name = name;
-        this.description = description;
-        this.cooldown = cooldown;
-        this.multiplierFormula = multiplierFormula;
-        this.visibility = visibility;
-        this.group = group;
-        this.champion = champion;
+    public Skill(Builder builder) {
+        this.id = builder.id;
+        this.revision = builder.revision;
+        this.name = builder.name;
+        this.description = builder.description;
+        this.cooldown = builder.cooldown;
+        this.multiplierFormula = builder.multiplierFormula;
+        this.visibility = builder.visibility;
+        this.group = builder.group;
+        this.champion = builder.champion;
     }
 
     public int getId() { return id; }
@@ -127,7 +119,7 @@ public class Skill {
         }
 
         public Skill build() {
-            return new Skill(id, revision, name, description, cooldown, multiplierFormula, visibility, group, champion);
+            return new Skill(this);
         }
     }
 
