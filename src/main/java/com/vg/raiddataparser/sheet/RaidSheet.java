@@ -4,6 +4,7 @@ import com.google.api.services.sheets.v4.model.*;
 import com.vg.raiddataparser.googleservices.sheets.GoogleSheetsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,12 +14,14 @@ import java.util.List;
 public abstract class RaidSheet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RaidSheet.class.getName());
-    private final GoogleSheetsService sheetsService = new GoogleSheetsService();
+
     public List<List<Object>> values;
     private final String title;
     private final int index;
     private final List<String> headerRowValues;
 
+    @Autowired
+    private GoogleSheetsService sheetsService;
 
     public RaidSheet(String title, int index, List<String> headerRowValues) {
         this.title = title;

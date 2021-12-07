@@ -8,13 +8,13 @@ import com.vg.raiddataparser.googleservices.drive.GoogleDriveService;
 import com.vg.raiddataparser.googleservices.sheets.GoogleSheetsService;
 import com.vg.raiddataparser.model.Skill;
 import com.vg.raiddataparser.model.champion.Champion;
-import com.vg.raiddataparser.sheet.ChampionSheet;
-import com.vg.raiddataparser.sheet.MultiplierSheet;
 import com.vg.raiddataparser.sheet.RaidSheet;
-import com.vg.raiddataparser.sheet.SkillSheet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+@Component
 public class SpreadsheetRaidData {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpreadsheetRaidData.class.getName());
@@ -33,21 +34,26 @@ public class SpreadsheetRaidData {
     private static final Color FIRST_BAND_COLOR = new Color().setRed(0.92f).setGreen(0.92f).setBlue(0.95f);
     private static final Color SECOND_BAND_COLOR = new Color().setRed(1f).setGreen(1f).setBlue(1f);
 
-    private final GoogleDriveService driveService = new GoogleDriveService();
-    private final GoogleSheetsService sheetsService = new GoogleSheetsService();
+    @Autowired
+    private GoogleDriveService driveService;
 
-    private final RaidSheet multiplierSheet = new MultiplierSheet();
-    private final RaidSheet championSheet = new ChampionSheet();
-    private final RaidSheet skillSheet = new SkillSheet();
+    @Autowired
+    private GoogleSheetsService sheetsService;
+
+    @Autowired
+    private RaidSheet multiplierSheet;
+
+    @Autowired
+    private RaidSheet championSheet;
+
+    @Autowired
+    private RaidSheet skillSheet;
 
     private boolean updating = false;
 
     private String spreadsheetId;
 
-    public SpreadsheetRaidData() {
-        initializeRaidData();
-    }
-
+    @PostConstruct
     private void initializeRaidData() {
         File file = new File(RESOURCES_PATH + SPREADSHEET_ID_FILE_NAME);
 

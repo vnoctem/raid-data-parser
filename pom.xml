@@ -63,6 +63,11 @@
             <artifactId>google-http-client-jackson2</artifactId>
             <version>1.38.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 
     <build>
