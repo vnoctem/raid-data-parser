@@ -12,6 +12,7 @@ import com.vg.raiddataparser.model.champion.attributes.ChampionFaction;
 import com.vg.raiddataparser.model.champion.attributes.ChampionRarity;
 import com.vg.raiddataparser.model.champion.attributes.ChampionRole;
 import com.vg.raiddataparser.repository.ChampionRepository;
+import com.vg.raiddataparser.repository.SkillRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,9 @@ public class DataParser {
 
     @Autowired
     private ChampionRepository championRepository;
+
+    @Autowired
+    private SkillRepository skillRepository;
 
     // Method called after bean initialization
     @PostConstruct
@@ -117,6 +121,8 @@ public class DataParser {
                         .setCriticalHeal(calculateBaseStatValue(championCriticalHeal))
                         .build();
 
+
+
                 // Get SkillData node
                 JsonNode nodeSkillData = rootNode.get(JSON_SKILL_DATA_NODE);
                 ArrayNode nodeSkills = (ArrayNode) nodeSkillData.get(JSON_SKILLS_NODE);
@@ -133,10 +139,10 @@ public class DataParser {
 
                             // Create a new Skill for skill ID found
                             if (nodeSkills.get(i).findPath("Id").intValue() == championSkillId) {
-
-                                // TODO: review (save skill in DB)
-                                // Save Skill in database
                                 Skill skill = createSkill(rootNode, nodeSkills.get(i), champion);
+
+                                // Save Skill in database
+                                skillRepository.save(skill);
 
                                 championSkills.add(skill);
                                 spreadsheetRaidData.addSkillToValues(skill);
@@ -153,7 +159,6 @@ public class DataParser {
 
                     // Save champion in database
                     championRepository.save(champion);
-
 
                 } catch (IOException e) {
                     LOGGER.error("Error while parsing champion's skills for champion (ID, name): "
