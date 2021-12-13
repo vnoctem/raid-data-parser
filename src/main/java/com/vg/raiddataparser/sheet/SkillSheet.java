@@ -40,8 +40,7 @@ public class SkillSheet extends RaidSheet {
         // - description is not empty
         if (s.getName() != null
                 && !s.getName().trim().isEmpty()
-                && !(s.getName().toLowerCase().contains("skill")
-                    && s.getName().toLowerCase().contains("name"))
+                && !(s.getName().toLowerCase().contains("skill") && s.getName().toLowerCase().contains("name"))
                 && !s.getDescription().trim().isEmpty()) {
 
             LOGGER.info("Adding skill to list: " + s.getName());

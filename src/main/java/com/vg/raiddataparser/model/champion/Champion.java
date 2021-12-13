@@ -32,23 +32,38 @@ public class Champion {
 
     public Champion() {}
 
-    public Champion(Builder builder) {
-        this.id = builder.id;
-        this.name = builder.name;
-        this.affinity = builder.affinity;
-        this.role = builder.role;
-        this.faction = builder.faction;
-        this.rarity = builder.rarity;
-        this.health = builder.health;
-        this.attack = builder.attack;
-        this.defense = builder.defense;
-        this.speed = builder.speed;
-        this.resistance = builder.resistance;
-        this.accuracy = builder.accuracy;
-        this.criticalChance = builder.criticalChance;
-        this.criticalDamage = builder.criticalDamage;
-        this.criticalHeal = builder.criticalHeal;
-        this.skills = builder.skills;
+    public Champion(int id,
+            String name,
+            int affinity,
+            int role,
+            int faction,
+            int rarity,
+            int health,
+            int attack,
+            int defense,
+            int speed,
+            int resistance,
+            int accuracy,
+            int criticalChance,
+            int criticalDamage,
+            int criticalHeal,
+            List<Skill> skills) {
+        this.id = id;
+        this.name = name;
+        this.affinity = affinity;
+        this.role = role;
+        this.faction = faction;
+        this.rarity = rarity;
+        this.health = health;
+        this.attack = attack;
+        this.defense = defense;
+        this.speed = speed;
+        this.resistance = resistance;
+        this.accuracy = accuracy;
+        this.criticalChance = criticalChance;
+        this.criticalDamage = criticalDamage;
+        this.criticalHeal = criticalHeal;
+        this.skills = skills;
     }
 
     public int getId() { return id; }
@@ -209,7 +224,22 @@ public class Champion {
         }
 
         public Champion build() {
-            return new Champion(this);
+            return new Champion(id,
+                    name,
+                    affinity,
+                    role,
+                    faction,
+                    rarity,
+                    health,
+                    attack,
+                    defense,
+                    speed,
+                    resistance,
+                    accuracy,
+                    criticalChance,
+                    criticalDamage,
+                    criticalHeal,
+                    skills);
         }
     }
 
