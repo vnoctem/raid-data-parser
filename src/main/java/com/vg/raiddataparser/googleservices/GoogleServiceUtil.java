@@ -8,7 +8,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
@@ -25,7 +25,7 @@ import java.util.List;
 public final class GoogleServiceUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GoogleServiceUtil.class.getName());
-    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+    private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 
     private static final List<String> SCOPES = Arrays.asList(
             SheetsScopes.SPREADSHEETS,
