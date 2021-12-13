@@ -3,14 +3,11 @@ package com.vg.raiddataparser.sheet;
 import com.vg.raiddataparser.model.Skill;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
-@Component
 public class SkillSheet extends RaidSheet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SkillSheet.class.getName());

@@ -4,13 +4,11 @@ import com.vg.raiddataparser.model.Skill;
 import com.vg.raiddataparser.model.champion.Champion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@Component
 public class MultiplierSheet extends RaidSheet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MultiplierSheet.class.getName());

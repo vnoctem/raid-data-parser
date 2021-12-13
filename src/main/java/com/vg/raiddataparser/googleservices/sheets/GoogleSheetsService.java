@@ -5,14 +5,12 @@ import com.google.api.services.sheets.v4.model.*;
 import com.vg.raiddataparser.googleservices.GoogleServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@Service
 public class GoogleSheetsService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GoogleSheetsService.class.getName());

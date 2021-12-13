@@ -1,16 +1,20 @@
 package com.vg.raiddataparser.sheet;
 
 import com.vg.raiddataparser.model.champion.Champion;
+import com.vg.raiddataparser.model.champion.attributes.ChampionAffinity;
+import com.vg.raiddataparser.model.champion.attributes.ChampionFaction;
+import com.vg.raiddataparser.model.champion.attributes.ChampionRarity;
+import com.vg.raiddataparser.model.champion.attributes.ChampionRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
-@Component
+/**
+ * Represents a sheet for champions
+ */
 public class ChampionSheet extends RaidSheet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChampionSheet.class.getName());
@@ -53,10 +57,10 @@ public class ChampionSheet extends RaidSheet {
 
             values.add(Arrays.asList(
                     c.getName(),
-                    c.getFaction(),
-                    c.getRarity(),
-                    c.getAffinity(),
-                    c.getRole(),
+                    ChampionFaction.getName(c.getFaction()),
+                    ChampionRarity.getName(c.getRarity()),
+                    ChampionAffinity.getName(c.getAffinity()),
+                    ChampionRole.getName(c.getRole()),
                     c.getHealth(),
                     c.getAttack(),
                     c.getDefense(),

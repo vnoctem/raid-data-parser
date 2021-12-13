@@ -7,14 +7,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.vg.raiddataparser.SpreadsheetRaidData;
 import com.vg.raiddataparser.model.Skill;
 import com.vg.raiddataparser.model.champion.Champion;
-import com.vg.raiddataparser.model.champion.attributes.ChampionAffinity;
-import com.vg.raiddataparser.model.champion.attributes.ChampionFaction;
-import com.vg.raiddataparser.model.champion.attributes.ChampionRarity;
-import com.vg.raiddataparser.model.champion.attributes.ChampionRole;
-import com.vg.raiddataparser.repository.ChampionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -37,15 +31,14 @@ public class DataParser {
     private static final String JSON_SKILLS_NODE = "SkillTypes";
     private static final String JSON_STATIC_DATA_LOCALIZATION_NODE = "StaticDataLocalization";
 
-    @Autowired
     private SpreadsheetRaidData spreadsheetRaidData;
-
-    @Autowired
-    private ChampionRepository championRepository;
 
     // Method called after bean initialization
     @PostConstruct
     private void parseData() {
+
+        spreadsheetRaidData = new SpreadsheetRaidData();
+
         InputStream inputStream = null;
         try {
             inputStream = new URL(JSON_DATA_URL).openStream();
@@ -73,7 +66,7 @@ public class DataParser {
         for (JsonNode nodeChampion : nodeChampions) {
             // Filter out unwanted champions
             // - with no AwakenMaterials (not fully ascended, where applicable)
-            // - with faction values different from 0 (bosses, demon lord, pve waves)
+            // - with faction values different than 0 (bosses, demon lord, pve waves)
             if (!nodeChampion.has("AwakenMaterials") && nodeChampion.get("Fraction").intValue() != 0) {
 
                 int championId = nodeChampion.get("Id").intValue();
@@ -83,10 +76,10 @@ public class DataParser {
                 String championNameKey = nodeChampion.get("Name").get("Key").textValue();
                 String championName = nodeStaticDataLocalization.findPath(championNameKey).textValue();
 
-                int championAffinityCode = nodeChampion.get("Element").intValue();
-                int championRoleCode = nodeChampion.get("Role").intValue();
-                int championFactionCode = nodeChampion.get("Fraction").intValue();
-                int championRarityCode = nodeChampion.get("Rarity").intValue();
+                int championAffinity = nodeChampion.get("Element").intValue();
+                int championRole = nodeChampion.get("Role").intValue();
+                int championFaction = nodeChampion.get("Fraction").intValue();
+                int championRarity = nodeChampion.get("Rarity").intValue();
 
                 JsonNode nodeBaseStats = nodeChampion.get("BaseStats");
                 long championHealth = nodeBaseStats.get("Health").longValue();
@@ -102,10 +95,10 @@ public class DataParser {
                 Champion champion = new Champion.Builder()
                         .setId(championId)
                         .setName(championName)
-                        .setAffinity(ChampionAffinity.getName(championAffinityCode))
-                        .setRole(ChampionRole.getName(championRoleCode))
-                        .setFaction(ChampionFaction.getName(championFactionCode))
-                        .setRarity(ChampionRarity.getName(championRarityCode))
+                        .setAffinity(championAffinity)
+                        .setRole(championRole)
+                        .setFaction(championFaction)
+                        .setRarity(championRarity)
                         .setHealth(calculateScalableStatValue(championHealth) * 15) // for HP only, multiply by 15
                         .setAttack(calculateScalableStatValue(championAttack))
                         .setDefense(calculateScalableStatValue(championDefense))
@@ -141,7 +134,7 @@ public class DataParser {
                                 championSkills.add(skill);
                                 spreadsheetRaidData.addSkillToValues(skill);
 
-                                // Remove node to have fewer nodes to loop through in the next iteration
+                                // Remove node to have less nodes to loop through in the next iteration
                                 nodeSkills.remove(i);
                             }
                         }
@@ -150,10 +143,6 @@ public class DataParser {
                     champion.setSkills(championSkills);
                     spreadsheetRaidData.addChampionToValues(champion);
                     spreadsheetRaidData.addMultiplierToValues(champion);
-
-                    // Save champion in database
-                    championRepository.save(champion);
-
 
                 } catch (IOException e) {
                     LOGGER.error("Error while parsing champion's skills for champion (ID, name): "

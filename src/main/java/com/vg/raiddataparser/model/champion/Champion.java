@@ -2,21 +2,16 @@ package com.vg.raiddataparser.model.champion;
 
 import com.vg.raiddataparser.model.Skill;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Transient;
 import java.util.List;
 
-@Entity
 public class Champion {
 
-    @Id
     private int id;
     private String name;
-    private String affinity;
-    private String role;
-    private String faction;
-    private String rarity;
+    private int affinity;
+    private int role;
+    private int faction;
+    private int rarity;
     private int health;
     private int attack;
     private int defense;
@@ -26,8 +21,6 @@ public class Champion {
     private int criticalChance;
     private int criticalDamage;
     private int criticalHeal;
-
-    @Transient
     private List<Skill> skills;
 
     public Champion() {}
@@ -55,13 +48,13 @@ public class Champion {
 
     public String getName() { return name; }
 
-    public String getAffinity() { return affinity; }
+    public int getAffinity() { return affinity; }
 
-    public String getRole() { return role; }
+    public int getRole() { return role; }
 
-    public String getFaction() { return faction; }
+    public int getFaction() { return faction; }
 
-    public String getRarity() { return rarity; }
+    public int getRarity() { return rarity; }
 
     public int getHealth() { return health; }
 
@@ -113,10 +106,10 @@ public class Champion {
 
         private int id;
         private String name;
-        private String affinity;
-        private String role;
-        private String faction;
-        private String rarity;
+        private int affinity;
+        private int role;
+        private int faction;
+        private int rarity;
         private int health;
         private int attack;
         private int defense;
@@ -138,22 +131,22 @@ public class Champion {
             return this;
         }
 
-        public Builder setAffinity(String affinity) {
+        public Builder setAffinity(int affinity) {
             this.affinity = affinity;
             return this;
         }
 
-        public Builder setRole(String role) {
+        public Builder setRole(int role) {
             this.role = role;
             return this;
         }
 
-        public Builder setFaction(String faction) {
+        public Builder setFaction(int faction) {
             this.faction = faction;
             return this;
         }
 
-        public Builder setRarity(String rarity) {
+        public Builder setRarity(int rarity) {
             this.rarity = rarity;
             return this;
         }
