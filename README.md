@@ -12,7 +12,7 @@ Creates a Google Sheet containing data parsed from a JSON https://github.com/Da-
 * Google Sheets API v4
 * Google Drive API v3
 
-### Setup
+### Development setup
 ##### APIs
 1. Go to [Google API console](https://console.developers.google.com/) and create a new project
 2. Enable Google Sheets API and Google Drive API
